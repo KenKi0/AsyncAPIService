@@ -4,7 +4,8 @@ from uuid import UUID
 from elasticsearch_dsl import Q, Search
 
 
-def _get_search(
+def get_search(
+    index: str,
     query: Optional[str] = None,
     sort: str = '-imdb_rating',
     page_num: int = 1,
@@ -15,6 +16,7 @@ def _get_search(
     Получение Search.
 
     Args:
+        index: Индекс для поиска
         query: Параметр поиска.
         sort: Параметр сортировки.
         page_num: Номер страницы.
@@ -24,7 +26,7 @@ def _get_search(
     Returns:
         Search: Объект Search.
     """
-    search = Search(index='movies').query('match_all').sort(sort)
+    search = Search(index=index).query('match_all').sort(sort)
     if _filter:
         search = search.query('bool', filter=[Q('terms', tags=['genre', str(_filter)])])
     if query:
@@ -35,4 +37,4 @@ def _get_search(
 
 
 if __name__ == '__main__':
-    body = _get_search(query='None', sort='-None', page_num=1, page_size=50, _filter=None)
+    body = get_search(query='None', sort='-None', page_num=1, page_size=50, _filter=None)

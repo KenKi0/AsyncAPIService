@@ -10,6 +10,8 @@ from fastapi import Depends
 from src.db.elastic import get_elastic
 from src.db.redis import get_redis
 from src.models.film import DetailFilmResponse, Film, FilmResponse
+from src.models.genre import DetailGenre
+from src.models.person import FilmPerson
 
 from .utils import create_key
 
@@ -17,7 +19,7 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class FilmService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
+    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index: str = 'movies'):
         """
         Args:
             redis: Соединение с Redis.
@@ -26,6 +28,7 @@ class FilmService:
 
         self.redis = redis
         self.elastic = elastic
+        self.index = index
 
     async def get_by_id(self, film_id: str) -> Optional[DetailFilmResponse]:
         """Получение и запись информации о фильме.
@@ -41,15 +44,25 @@ class FilmService:
         if not film:
             try:
                 data = await self._get_film_from_elastic(film_id)
+                genre_list = [DetailGenre(uuid=item.get('uuid'), name=item.get('name')) for item in data.genre]
+                actors_list = [
+                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.actors
+                ]
+                writers_list = [
+                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.writers
+                ]
+                directors_list = [
+                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.directors
+                ]
                 film = DetailFilmResponse(
-                    uuid=data.id,
-                    title=data.title,
-                    imdb_rating=data.imdb_rating,
-                    description=data.description,
-                    genre=data.genre,
-                    actors=data.actors,
-                    writers=data.writers,
-                    directors=data.director,
+                    uuid=film.id,
+                    title=film.title,
+                    imdb_rating=film.imdb_rating,
+                    description=film.description,
+                    genre=genre_list,
+                    actors=actors_list,
+                    writers=writers_list,
+                    directors=directors_list,
                 )
             except NotFoundError as ex:  # noqa: F841
                 #  TODO logging
