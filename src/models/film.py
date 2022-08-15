@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from .genre import DetailGenre
 from .mixin import BaseModelMixin
-from .person import PersonFilm
+from .person import FilmPerson
 
 
 class Film(BaseModel):
@@ -43,6 +43,6 @@ class DetailFilmResponse(FilmResponse):
 
     description: Optional[str]
     genre: Optional[list[DetailGenre]]
-    actors: Optional[list[PersonFilm]]
-    writers: Optional[list[PersonFilm]]
-    directors: Optional[list[PersonFilm]]
+    actors: Optional[list[FilmPerson]]
+    writers: Optional[list[FilmPerson]]
+    directors: Optional[list[FilmPerson]]
