@@ -10,27 +10,18 @@ class Person(BaseModel):
 
     id: str  # noqa: VNE003
     full_name: str
-    roles: Optional[list]
-    film_ids: Optional[list]
+    roles: Optional[list[str]]
+    film_ids: Optional[list[str]]
 
 
 class FilmPerson(BaseModelMixin):
-    """Информация о персонах.
-
-    Requests:
-        - /api/v1/films/<uuid:UUID>/
-    """
+    """Информация о персонах."""
 
     full_name: str
 
 
 class DetailPerson(FilmPerson):
-    """Полная информация по персонам.
+    """Полная информация по персонам."""
 
-    Requests:
-        - /api/v1/persons/<uuid:UUID>/
-        - /api/v1/persons/search/
-    """
-
-    role: str
-    film_ids: Optional[list]
+    role: Optional[list[str]]
+    film_ids: Optional[list[str]]
