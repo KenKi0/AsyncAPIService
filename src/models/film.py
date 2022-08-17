@@ -13,33 +13,24 @@ class Film(BaseModel):
     id: str  # noqa: VNE003
     title: str
     description: Optional[str]
-    imdb_rating: Optional[float]
-    director: Optional[list[str]]
+    imdb_rating: float
+    director: Optional[list[dict]]
+    actors_names: Optional[list[str]]
+    writers_names: Optional[list[str]]
     actors: Optional[list[dict]]
     writers: Optional[list[dict]]
     genre: Optional[list[str]]
 
 
 class FilmResponse(BaseModelMixin):
-    """Информация о фильме на главной странице | странице поиска.
-
-    Requests:
-        - /api/v1/films/
-        - /api/v1/films?sort=.../
-        - /api/v1/films/search/
-        - /api/v1/persons/<uuid:UUID>/film/
-    """
+    """Информация о фильме на главной странице | странице поиска."""
 
     title: str
-    imdb_rating: Optional[float]
+    imdb_rating: float
 
 
 class DetailFilmResponse(FilmResponse):
-    """Полная информация по фильму.
-
-    Requests:
-        - /api/v1/films/<uuid:UUID>/
-    """
+    """Полная информация по фильму."""
 
     description: Optional[str]
     genre: Optional[list[DetailGenre]]
