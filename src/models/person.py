@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .mixin import DefaultModel
+from models.mixin import DefaultModel
 
 
 class Person(BaseModel):
