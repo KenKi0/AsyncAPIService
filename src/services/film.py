@@ -68,7 +68,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         Получение и запись списка данных о фильмах.
 
         Args:
-            search: Объект класса Search.
+            **kwargs: Параметры запроса.
             key: Запрос к сервису
 
         Returns:
@@ -85,6 +85,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         key = create_key(f'{self.index}:{search.to_dict()}')
         cached_films = await self.get_from_cache(key)
         if cached_films:
+            cached_films = orjson.loads(cached_films)
             return [FilmResponse(**film) for film in cached_films]
         try:
             docs = await self.get_by_search_from_elastic(search)

@@ -7,7 +7,7 @@ class SearchMixin:
     def get_search(
         self,
         query: Optional[str] = None,
-        sort: str = '-imdb_rating',
+        sort: Optional[str] = None,
         page_num: int = 1,
         page_size: int = 50,
         _filter: Optional[str] = None,
@@ -27,7 +27,9 @@ class SearchMixin:
         """
         start = (page_num - 1) * page_size
         stop = page_size * page_num
-        search = Search(index=self.index).query('match_all').sort(sort)[start:stop]
+        search = Search(index=self.index).query('match_all')[start:stop]
+        if sort:
+            search = search.sort(sort)
         if _filter:
             search = search.query('bool', should=[Q('nested', path='genre', query=Q('match', genre__id=_filter))])
         if query:

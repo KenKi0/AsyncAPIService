@@ -1,9 +1,10 @@
 from typing import Optional
 
-from genre import DetailGenre
-from mixin import DefaultModel
-from person import FilmPerson
 from pydantic import BaseModel
+
+from models.genre import DetailGenre
+from models.mixin import DefaultModel
+from models.person import FilmPerson
 
 
 class Film(BaseModel):

@@ -1,7 +1,8 @@
 from typing import Optional
 
-from mixin import DefaultModel
 from pydantic import BaseModel
+
+from models.mixin import DefaultModel
 
 
 class Person(BaseModel):
