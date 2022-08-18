@@ -6,7 +6,7 @@ def orjson_dumps(value, *, default):
     return orjson.dumps(value, default=default).decode()
 
 
-class BaseModelMixin(BaseModel):
+class DefaultModel(BaseModel):
     """Mixin."""
 
     uuid: str

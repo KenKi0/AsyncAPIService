@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .mixin import BaseModelMixin
+from .mixin import DefaultModel
 
 
 class Genre(BaseModel):
@@ -13,7 +13,7 @@ class Genre(BaseModel):
     description: Optional[str]
 
 
-class DetailGenre(BaseModelMixin):
+class DetailGenre(DefaultModel):
     """Полная информация по жанрам."""
 
     name: str

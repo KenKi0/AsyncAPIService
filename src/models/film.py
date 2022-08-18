@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .genre import DetailGenre
-from .mixin import BaseModelMixin
+from .mixin import DefaultModel
 from .person import FilmPerson
 
 
@@ -19,10 +19,10 @@ class Film(BaseModel):
     writers_names: Optional[list[str]]
     actors: Optional[list[dict]]
     writers: Optional[list[dict]]
-    genre: Optional[list[str]]
+    genre: Optional[list[dict]]
 
 
-class FilmResponse(BaseModelMixin):
+class FilmResponse(DefaultModel):
     """Информация о фильме на главной странице | странице поиска."""
 
     title: str
@@ -32,8 +32,8 @@ class FilmResponse(BaseModelMixin):
 class DetailFilmResponse(FilmResponse):
     """Полная информация по фильму."""
 
-    description: Optional[str]
+    description: Optional[str] = ''
     genre: Optional[list[DetailGenre]]
     actors: Optional[list[FilmPerson]]
-    writers: Optional[list[FilmPerson]]
+    writers: Optional[list[FilmPerson]] = []
     directors: Optional[list[FilmPerson]]
