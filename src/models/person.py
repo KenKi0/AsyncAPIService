@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .mixin import BaseModelMixin
+from .mixin import DefaultModel
 
 
 class Person(BaseModel):
@@ -14,7 +14,7 @@ class Person(BaseModel):
     film_ids: Optional[list[str]]
 
 
-class FilmPerson(BaseModelMixin):
+class FilmPerson(DefaultModel):
     """Информация о персонах."""
 
     full_name: str
