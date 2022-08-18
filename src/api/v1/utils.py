@@ -6,7 +6,6 @@ from elasticsearch_dsl import Q, Search
 class SearchMixin:
     def get_search(
         self,
-        index: str,
         query: Optional[str] = None,
         sort: str = '-imdb_rating',
         page_num: int = 1,
@@ -17,7 +16,6 @@ class SearchMixin:
         Получение Search.
 
         Args:
-            index: Индекс для поиска
             query: Параметр поиска.
             sort: Параметр сортировки.
             page_num: Номер страницы.
@@ -29,7 +27,7 @@ class SearchMixin:
         """
         start = (page_num - 1) * page_size
         stop = page_size * page_num
-        search = Search(index=index).query('match_all').sort(sort)[start:stop]
+        search = Search(index=self.index).query('match_all').sort(sort)[start:stop]
         if _filter:
             search = search.query('bool', should=[Q('nested', path='genre', query=Q('match', genre__id=_filter))])
         if query:
