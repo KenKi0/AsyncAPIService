@@ -69,7 +69,6 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
         Args:
             **kwargs: Параметры запроса.
-            key: Запрос к сервису
 
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
