@@ -1,3 +1,4 @@
+import json  # TODO не забыть убрать
 from functools import lru_cache
 from typing import Optional
 
@@ -7,11 +8,18 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from elasticsearch_dsl import Search
 from fastapi import Depends
 
-from src.db.elastic import get_elastic
-from src.db.redis import get_redis
-from src.models.film import DetailFilmResponse, Film, FilmResponse
-from src.models.genre import DetailGenre
-from src.models.person import FilmPerson
+try:
+    from src.db.elastic import get_elastic
+    from src.db.redis import get_redis
+    from src.models.film import DetailFilmResponse, Film, FilmResponse
+    from src.models.genre import DetailGenre
+    from src.models.person import FilmPerson
+except ModuleNotFoundError:
+    from db.elastic import get_elastic
+    from db.redis import get_redis
+    from models.film import DetailFilmResponse, Film, FilmResponse
+    from models.genre import DetailGenre
+    from models.person import FilmPerson
 
 from .utils import create_key
 
@@ -40,27 +48,21 @@ class FilmService:
             Optional[Film]: Объект модели Film | None.
         """
 
-        film = await self._film_from_cache(film_id)
+        film = await self._film_from_cache(film_id)  # TODO _data_from_cache ? делать mixin ?
         if not film:
             try:
                 data = await self._get_film_from_elastic(film_id)
-                genre_list = [DetailGenre(uuid=item.get('uuid'), name=item.get('name')) for item in data.genre]
-                actors_list = [
-                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.actors
-                ]
-                writers_list = [
-                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.writers
-                ]
-                directors_list = [
-                    FilmPerson(uuid=item.get('uuid'), full_name=item.get('full_name')) for item in data.directors
-                ]
+                genre_list = [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre]
+                actors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
+                writers_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
+                directors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
                 film = DetailFilmResponse(
-                    uuid=film.id,
-                    title=film.title,
-                    imdb_rating=film.imdb_rating,
-                    description=film.description,
-                    genre=genre_list,
+                    uuid=data.id,
+                    title=data.title,
+                    imdb_rating=data.imdb_rating,
+                    description=data.description,
                     actors=actors_list,
+                    genre=genre_list,
                     writers=writers_list,
                     directors=directors_list,
                 )
@@ -88,6 +90,7 @@ class FilmService:
             try:
                 data = await self._get_search_from_elastic(search)
                 films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
+                # print(len(films)) # noqa: E800
             except NotFoundError as ex:  # noqa: F841
                 #  TODO logging
                 return None
@@ -124,10 +127,12 @@ class FilmService:
 
         try:
             query = search.to_dict()
-            index = search.index[0]
+            index = search._index[0]
             data = await self.elastic.search(index=index, body=query)
             hits = data['hits']['hits']
-            films = [Film(**row('_source')) for row in hits]
+            films = [Film(**row['_source']) for row in hits]
+            with open('film.json', 'a', encoding='utf-8') as f:
+                json.dump([row['_source'] for row in hits], f, indent=4)
         except NotFoundError as ex:  # noqa: F841
             #  TODO logging
             return None
@@ -164,6 +169,8 @@ class FilmService:
         data = await self.redis.get(key)
         if not data:
             return None
+        # return None  # TODO не забыть убрать заглушку
+        # data = json.loads(data)  # noqa: E800
         return [FilmResponse.parse_raw(film) for film in data]
 
     async def _put_film_to_cache(self, film: DetailFilmResponse) -> None:
@@ -173,7 +180,7 @@ class FilmService:
             film: Объект модели DetailFilmResponse.
         """
 
-        await self.redis.set(film.id, film.json(), ex=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(film.uuid, film.json(), ex=FILM_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_search_to_cache(self, key: str, films: list[FilmResponse]) -> None:
         """Запись данных о фильмах в кеш.
@@ -184,6 +191,8 @@ class FilmService:
         """
 
         data = orjson.dumps([film.dict() for film in films])
+        with open('kash.json', 'a', encoding='utf-8') as f:
+            json.dump(data.decode(), f, indent=4)
         await self.redis.set(key, data, ex=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 

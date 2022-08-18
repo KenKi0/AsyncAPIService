@@ -3,7 +3,10 @@ from pathlib import Path
 
 from pydantic import BaseSettings
 
-from src.core.logger import LOGGING
+try:
+    from src.core.logger import LOGGING
+except ModuleNotFoundError:
+    from core.logger import LOGGING
 
 logging_config.dictConfig(LOGGING)
 

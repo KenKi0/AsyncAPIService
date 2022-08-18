@@ -5,14 +5,18 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from models.film import DetailFilmResponse, FilmResponse
-from src.services.film import FilmService, get_film_service
+
+try:
+    from src.services.film import FilmService, get_film_service
+except ModuleNotFoundError:
+    from services.film import FilmService, get_film_service
 
 from .utils import get_search
 
 router = APIRouter()
 
 
-@router.get('/', response_model=FilmResponse)
+@router.get('/', response_model=list[FilmResponse])
 async def film_response(
     sort: str,
     film_service: FilmService = Depends(get_film_service),
@@ -40,18 +44,18 @@ async def film_response(
         _filter=_filter,
         index=index,
     )
-    films = await film_service.get_by_search(search=search)
+    films = await film_service.get_by_search(search=search)  # TODO проверить индекс
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return films
 
 
-@router.get('/search', response_model=FilmResponse)
+@router.get('/search', response_model=list[FilmResponse])
 async def search_film_response(
     query: str,
     film_service: FilmService = Depends(get_film_service),
-    page_num: int = Query(default=1, alias='page[number]'),
-    page_size: int = Query(default=50, alias='page[size]'),
+    page_num: int = Query(default=1, alias='page%5Bnumber%5D'),
+    page_size: int = Query(default=50, alias='page%5Bsize%5D'),
 ) -> Optional[list[FilmResponse]]:
     """Поиск по фильмам.
 
