@@ -1,16 +1,39 @@
-import orjson
+from typing import Optional
+
 from pydantic import BaseModel
 
-
-def orjson_dumps(value, *, default):
-    return orjson.dumps(value, default=default).decode()
+from .genre import DetailGenre
+from .mixin import DefaultModel
+from .person import FilmPerson
 
 
 class Film(BaseModel):
+    """Модель описывающая document в Elasticserch."""
+
     id: str  # noqa: VNE003
     title: str
-    description: str
+    description: Optional[str]
+    imdb_rating: float
+    director: Optional[list[dict]]
+    actors_names: Optional[list[str]]
+    writers_names: Optional[list[str]]
+    actors: Optional[list[dict]]
+    writers: Optional[list[dict]]
+    genre: Optional[list[dict]]
 
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
+
+class FilmResponse(DefaultModel):
+    """Информация о фильме на главной странице | странице поиска."""
+
+    title: str
+    imdb_rating: float
+
+
+class DetailFilmResponse(FilmResponse):
+    """Полная информация по фильму."""
+
+    description: Optional[str] = ''
+    genre: Optional[list[DetailGenre]]
+    actors: Optional[list[FilmPerson]]
+    writers: Optional[list[FilmPerson]] = []
+    directors: Optional[list[FilmPerson]]

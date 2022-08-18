@@ -6,8 +6,13 @@ from fastapi.responses import ORJSONResponse
 
 from core.config import settings
 from db import elastic, redis
-from src.api.v1 import films
-from src.core.logger import LOGGING
+
+try:
+    from src.api.v1 import films
+    from src.core.logger import LOGGING
+except ModuleNotFoundError:
+    from api.v1 import films
+    from core.logger import LOGGING
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
