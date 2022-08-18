@@ -27,11 +27,8 @@ async def film_response(
     """Главная страница с фильмами.
 
     Args:
-        sort: Параметр сортировки.
-        page_num: Номер страницы.
-        page_size: Размер страницы.
-        _filter: Параметр фильтрации по жанрам.
         film_service: Провайдер для FilmService.
+        **params: Параметр из url.
 
     Returns:
         Optional[list[FilmResponse]]: Список объектов модели FilmResponse.
@@ -44,7 +41,8 @@ async def film_response(
         _filter=_filter,
         index=index,
     )
-    films = await film_service.get_by_search(search=search)  # TODO проверить индекс
+    key = f'{search._index[0]}:{search.to_dict()}'
+    films = await film_service.get_by_search(search=search, key=key)  # TODO проверить индекс
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return films
@@ -54,16 +52,14 @@ async def film_response(
 async def search_film_response(
     query: str,
     film_service: FilmService = Depends(get_film_service),
-    page_num: int = Query(default=1, alias='page%5Bnumber%5D'),
-    page_size: int = Query(default=50, alias='page%5Bsize%5D'),
+    page_num: int = Query(default=1, alias='page[number]'),
+    page_size: int = Query(default=50, alias='page[size]'),
 ) -> Optional[list[FilmResponse]]:
     """Поиск по фильмам.
 
     Args:
-        query: Параметр поиска.
-        page_num: Номер страницы.
-        page_size: Размер страницы.
         film_service: Провайдер для FilmService.
+        **params: Параметр из url.
 
     Returns:
         Optional[list[FilmResponse]]: Список объектов модели FilmResponse.
@@ -75,7 +71,8 @@ async def search_film_response(
         page_size=page_size,
         index=index,
     )
-    films = await film_service.get_by_search(search=search)
+    key = f'{search._index[0]}:{search.to_dict()}'
+    films = await film_service.get_by_search(search=search, key=key)
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return films
