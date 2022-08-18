@@ -1,4 +1,3 @@
-import json  # TODO не забыть убрать
 from functools import lru_cache
 from typing import Optional
 
@@ -45,10 +44,10 @@ class FilmService:
             film_id: id фильма.
 
         Returns:
-            Optional[Film]: Объект модели Film | None.
+            Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
 
-        film = await self._film_from_cache(film_id)  # TODO _data_from_cache ? делать mixin ?
+        film = await self._film_from_cache(film_id)
         if not film:
             try:
                 data = await self._get_film_from_elastic(film_id)
@@ -72,25 +71,24 @@ class FilmService:
             await self._put_film_to_cache(film)
         return film
 
-    async def get_by_search(self, search: Search) -> Optional[list[FilmResponse]]:
+    async def get_by_search(self, search: Search, key: str) -> Optional[list[FilmResponse]]:
         """
         Получение и запись списка данных о фильмах.
 
         Args:
             search: Объект класса Search.
+            key: Запрос к сервису
 
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
-        query = search.to_dict()
-        key = create_key(str(query))
+        key = create_key(key)
         films = await self._search_from_cache(key)
         if not films:
             try:
                 data = await self._get_search_from_elastic(search)
                 films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
-                # print(len(films)) # noqa: E800
             except NotFoundError as ex:  # noqa: F841
                 #  TODO logging
                 return None
@@ -131,8 +129,6 @@ class FilmService:
             data = await self.elastic.search(index=index, body=query)
             hits = data['hits']['hits']
             films = [Film(**row['_source']) for row in hits]
-            with open('film.json', 'a', encoding='utf-8') as f:
-                json.dump([row['_source'] for row in hits], f, indent=4)
         except NotFoundError as ex:  # noqa: F841
             #  TODO logging
             return None
@@ -148,7 +144,7 @@ class FilmService:
             key: Ключ.
 
         Returns:
-            Optional[Film]: Объект модели Film | None.
+            Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
 
         data = await self.redis.get(key)
@@ -169,9 +165,8 @@ class FilmService:
         data = await self.redis.get(key)
         if not data:
             return None
-        # return None  # TODO не забыть убрать заглушку
-        # data = json.loads(data)  # noqa: E800
-        return [FilmResponse.parse_raw(film) for film in data]
+        data = orjson.loads(data)
+        return [FilmResponse(**film) for film in data]
 
     async def _put_film_to_cache(self, film: DetailFilmResponse) -> None:
         """Запись данных о фильме в кеш.
@@ -186,13 +181,11 @@ class FilmService:
         """Запись данных о фильмах в кеш.
 
         Args:
-            films: Объект модели Film.
+            films: Список объектов модели FilmResponse.
             key: Ключ.
         """
 
         data = orjson.dumps([film.dict() for film in films])
-        with open('kash.json', 'a', encoding='utf-8') as f:
-            json.dump(data.decode(), f, indent=4)
         await self.redis.set(key, data, ex=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 
