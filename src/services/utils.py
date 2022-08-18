@@ -5,7 +5,7 @@ def create_key(params: str) -> str:
     """Получение хешированного ключа для Redis.
 
     Args:
-        params: Параметры запроса к API.
+        params: Данные для хеширования.
 
     Returns:
         str: Хешированный ключ для Redis.
