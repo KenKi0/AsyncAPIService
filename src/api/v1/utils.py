@@ -11,6 +11,7 @@ class SearchMixin:
         page_num: int = 1,
         page_size: int = 50,
         _filter: Optional[str] = None,
+        _person: Optional[str] = None,
     ) -> Search:
         """
         Получение Search.
@@ -21,6 +22,7 @@ class SearchMixin:
             page_num: Номер страницы.
             page_size: Размер страницы.
             _filter: Параметр фильтрации по жанрам.
+            _person: id персоны.
 
         Returns:
             Search: Объект Search.
@@ -32,6 +34,16 @@ class SearchMixin:
             search = search.sort(sort)
         if _filter:
             search = search.query('bool', should=[Q('nested', path='genre', query=Q('match', genre__id=_filter))])
+        if _person:
+            search = search.query(
+                'bool',
+                should=[
+                    Q('nested', path='actors', query=Q('match', actors__id=_person)),
+                    Q('nested', path='writers', query=Q('match', writers__id=_person)),
+                    Q('nested', path='writers', query=Q('match', writers__id=_person)),
+                    Q('nested', path='director', query=Q('match', director__id=_person)),
+                ],
+            )
         if query:
             search = search.query('multi_match', query=query, fuzziness='auto')[start:stop]
         return search
