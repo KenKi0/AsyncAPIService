@@ -1,0 +1,67 @@
+version: '3'
+services:
+
+  db:
+    image: postgres:14.3
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: $PG_DB
+      POSTGRES_USER: $PG_USER
+      POSTGRES_PASSWORD: $PG_PASSWORD
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    env_file:
+      - .env
+    restart: always
+
+  etl:
+    image: kenki228/cinema_etl
+    volumes:
+      - etl_data:/src/data
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - elastic
+    restart: always
+
+  fastapi:
+    build:
+      context: .
+      args:
+        PROJECT_ENV: production
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - elastic
+    expose:
+      - "8000"
+    restart: always
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.5
+    environment:
+      - 'xpack.security.enabled=false'
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+    restart: always
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  redis:
+    image: redis:7.0.4-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - cache:/data
+
+volumes:
+  etl_data:
+  db_data:
+  es_data:
+  cache:
