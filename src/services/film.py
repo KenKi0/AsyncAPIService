@@ -43,10 +43,24 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         try:
             doc = await self.get_by_id_from_elastic(film_id)
             data = Film(**doc['_source'])
-            genre_list = [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre]
-            actors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
-            writers_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
-            directors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
+            genre_list = (
+                [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
+            )
+            actors_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
+                if data.actors
+                else []
+            )
+            writers_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
+                if data.writers
+                else []
+            )
+            directors_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
+                if data.director
+                else []
+            )
             film = DetailFilmResponse(
                 uuid=data.id,
                 title=data.title,

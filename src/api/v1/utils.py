@@ -45,7 +45,7 @@ class SearchMixin:
                 ],
             )
         if query:
-            search = search.query('multi_match', query=query, fuzziness='auto')[start:stop]
+            search = search.query('multi_match', query=query, fuzziness='auto')
         return search
 
 
