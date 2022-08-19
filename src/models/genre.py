@@ -13,8 +13,13 @@ class Genre(BaseModel):
     description: Optional[str]
 
 
-class DetailGenre(DefaultModel):
-    """Полная информация по жанрам."""
+class FilmGenre(DefaultModel):
+    """Информация о жанре."""
 
     name: str
+
+
+class DetailGenre(FilmGenre):
+    """Полная информация по жанрам."""
+
     description: Optional[str]

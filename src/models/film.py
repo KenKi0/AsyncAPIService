@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from models.genre import DetailGenre
+from models.genre import FilmGenre
 from models.person import FilmPerson
 from models.utils import DefaultModel
 
@@ -33,7 +33,7 @@ class DetailFilmResponse(FilmResponse):
     """Полная информация по фильму."""
 
     description: Optional[str] = ''
-    genre: Optional[list[DetailGenre]]
+    genre: Optional[list[FilmGenre]]
     actors: Optional[list[FilmPerson]]
     writers: Optional[list[FilmPerson]] = []
     directors: Optional[list[FilmPerson]]
