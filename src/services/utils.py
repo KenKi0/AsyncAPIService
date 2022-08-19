@@ -50,7 +50,7 @@ class ElasticMixin:
             _id: id .
 
         Returns:
-            dict | None.
+            dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
@@ -71,7 +71,7 @@ class ElasticMixin:
             search: Объект класса Search .
 
         Returns:
-            dict | None.
+            dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
@@ -87,7 +87,7 @@ class ElasticMixin:
         Получение всех данных индекса из Elasticsearch.
 
         Returns:
-            dict | None.
+            dict: Ответ elasticsearch в виде dict | None.
         """
         try:
             doc = await self.elastic.get(self.index)

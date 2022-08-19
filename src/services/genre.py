@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import orjson
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from api.v1.utils import SearchMixin
@@ -37,10 +37,9 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         cached_genre = await self.get_from_cache(url)
         if cached_genre:
             return DetailGenre.parse_raw(cached_genre)
-        try:
-            doc = await self.get_by_id_from_elastic(uuid)
-        except NotFoundError as ex:  # noqa: F841
-            return None
+        doc = await self.get_by_id_from_elastic(uuid)
+        if doc is None:
+            return
         elastic_data = Genre(**doc['_source'])
         genre = DetailGenre(uuid=elastic_data.id, name=elastic_data.name, description=elastic_data.description)
         await self.put_into_cache(url, genre.json())
@@ -59,10 +58,9 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         if cached_genres:
             cached_genres = orjson.loads(cached_genres)
             return [DetailGenre(**genre) for genre in cached_genres]
-        try:
-            docs = await self.get_multi_from_elastic()
-        except NotFoundError as ex:  # noqa: F841
-            return None
+        docs = await self.get_multi_from_elastic()
+        if docs is None:
+            return
         elastic_data = [Genre(**row['_source']) for row in docs['hits']['hits']]
         genres = [DetailGenre(uuid=row.id, name=row.name, description=row.description) for row in elastic_data]
         data_to_cache = orjson.dumps([genre.dict() for genre in genres])
