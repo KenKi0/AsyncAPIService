@@ -77,6 +77,7 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             kwargs.get('page_num'),
             kwargs.get('page_size'),
         )
+        self.index = kwargs.get('index')
         docs = await self.get_by_search_from_elastic(search)
         if docs is None:
             return
