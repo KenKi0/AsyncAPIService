@@ -27,26 +27,41 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         self.elastic = elastic
         self.index = index
 
-    async def get_by_id(self, film_id: str) -> Optional[DetailFilmResponse]:
+    async def get_by_id(self, film_id: str, url: str) -> Optional[DetailFilmResponse]:
         """Получение и запись информации о фильме.
 
         Args:
             film_id: id фильма.
+            url: Ключ для кеша.
 
         Returns:
             Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
 
-        cached_film = await self.get_from_cache(film_id)
+        cached_film = await self.get_from_cache(url)
         if cached_film:
             return DetailFilmResponse.parse_raw(cached_film)
         try:
             doc = await self.get_by_id_from_elastic(film_id)
             data = Film(**doc['_source'])
-            genre_list = [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre]
-            actors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
-            writers_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
-            directors_list = [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
+            genre_list = (
+                [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
+            )
+            actors_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
+                if data.actors
+                else []
+            )
+            writers_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
+                if data.writers
+                else []
+            )
+            directors_list = (
+                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
+                if data.director
+                else []
+            )
             film = DetailFilmResponse(
                 uuid=data.id,
                 title=data.title,
@@ -60,7 +75,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         except NotFoundError as ex:  # noqa: F841
             #  TODO logging
             return None
-        await self.put_into_cache(film.uuid, film.json())
+        await self.put_into_cache(key=url, data=film.json())
         return film
 
     async def get_by_search(self, **kwargs) -> Optional[list[FilmResponse]]:
@@ -69,7 +84,6 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
         Args:
             **kwargs: Параметры запроса.
-            key: Запрос к сервису
 
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
@@ -82,7 +96,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
             kwargs.get('page_size'),
             kwargs.get('_filter'),
         )
-        key = create_key(f'{self.index}:{search.to_dict()}')
+        key = create_key(kwargs.get('url'))
         cached_films = await self.get_from_cache(key)
         if cached_films:
             cached_films = orjson.loads(cached_films)
