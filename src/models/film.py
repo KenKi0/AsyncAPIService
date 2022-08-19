@@ -3,8 +3,8 @@ from typing import Optional
 from pydantic import BaseModel
 
 from models.genre import DetailGenre
-from models.mixin import DefaultModel
 from models.person import FilmPerson
+from models.utils import DefaultModel
 
 
 class Film(BaseModel):
