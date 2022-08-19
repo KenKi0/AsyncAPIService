@@ -60,7 +60,7 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
             return [DetailGenre(**genre) for genre in cached_genres]
         docs = await self.get_multi_from_elastic()
         if docs is None:
-            return
+            return []
         elastic_data = [Genre(**row['_source']) for row in docs['hits']['hits']]
         genres = [DetailGenre(uuid=row.id, name=row.name, description=row.description) for row in elastic_data]
         data_to_cache = orjson.dumps([genre.dict() for genre in genres])

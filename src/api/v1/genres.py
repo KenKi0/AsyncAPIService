@@ -15,7 +15,7 @@ async def get_genre(
     request: Request,
     service: GenreService = Depends(get_genre_service),
 ):
-    genre = service.get(uuid, str(request.url.include_query_params()))
+    genre = await service.get(uuid, str(request.url.include_query_params()))
     if not genre:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre with specified uuid not exists')
     return genre
@@ -26,7 +26,4 @@ async def get_genres(
     request: Request,
     service: GenreService = Depends(get_genre_service),
 ):
-    genres = service.get_multi(str(request.url.include_query_params()))
-    if not genres:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre with specified uuid not exists')
-    return genres
+    return await service.get_multi(str(request.url.include_query_params()))

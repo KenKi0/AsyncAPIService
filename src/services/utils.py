@@ -89,8 +89,9 @@ class ElasticMixin:
         Returns:
             dict: Ответ elasticsearch в виде dict | None.
         """
+        body = {'query': {'match_all': {}}}
         try:
-            doc = await self.elastic.get(self.index)
+            doc = await self.elastic.search(index=self.index, body=body)
         except NotFoundError as ex:  # noqa: F841
             #  TODO logging
             return None
