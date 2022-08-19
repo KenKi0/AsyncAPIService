@@ -3,7 +3,7 @@ from typing import Optional
 
 import orjson
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from api.v1.utils import SearchMixin
@@ -12,7 +12,7 @@ from db.redis import get_redis
 from models.film import DetailFilmResponse, Film, FilmResponse
 from models.genre import DetailGenre
 from models.person import FilmPerson
-from services.utils import ElasticMixin, RedisCacheMixin, create_key
+from services.utils import ElasticMixin, RedisCacheMixin
 
 
 class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
@@ -41,54 +41,55 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         cached_film = await self.get_from_cache(url)
         if cached_film:
             return DetailFilmResponse.parse_raw(cached_film)
-        try:
-            doc = await self.get_by_id_from_elastic(film_id)
-            data = Film(**doc['_source'])
-            genre_list = (
-                [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
-            )
-            actors_list = (
-                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors]
-                if data.actors
-                else []
-            )
-            writers_list = (
-                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
-                if data.writers
-                else []
-            )
-            directors_list = (
-                [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
-                if data.director
-                else []
-            )
-            film = DetailFilmResponse(
-                uuid=data.id,
-                title=data.title,
-                imdb_rating=data.imdb_rating,
-                description=data.description,
-                actors=actors_list,
-                genre=genre_list,
-                writers=writers_list,
-                directors=directors_list,
-            )
-        except NotFoundError as ex:  # noqa: F841
-            #  TODO logging
-            return None
+        doc = await self.get_by_id_from_elastic(film_id)
+        if doc is None:
+            return
+        data = Film(**doc['_source'])
+        genre_list = (
+            [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
+        )
+        actors_list = (
+            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors] if data.actors else []
+        )
+        writers_list = (
+            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
+            if data.writers
+            else []
+        )
+        directors_list = (
+            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
+            if data.director
+            else []
+        )
+        film = DetailFilmResponse(
+            uuid=data.id,
+            title=data.title,
+            imdb_rating=data.imdb_rating,
+            description=data.description,
+            actors=actors_list,
+            genre=genre_list,
+            writers=writers_list,
+            directors=directors_list,
+        )
         await self.put_into_cache(key=url, data=film.json())
         return film
 
-    async def get_by_search(self, **kwargs) -> Optional[list[FilmResponse]]:
+    async def get_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
         """
         Получение и запись списка данных о фильмах.
 
         Args:
+            url: Ключ для кеша.
             **kwargs: Параметры запроса.
 
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
+        cached_films = await self.get_from_cache(url)
+        if cached_films:
+            cached_films = orjson.loads(cached_films)
+            return [FilmResponse(**film) for film in cached_films]
         search = self.get_search(
             kwargs.get('query'),
             kwargs.get('sort'),
@@ -96,20 +97,13 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
             kwargs.get('page_size'),
             kwargs.get('_filter'),
         )
-        key = create_key(kwargs.get('url'))
-        cached_films = await self.get_from_cache(key)
-        if cached_films:
-            cached_films = orjson.loads(cached_films)
-            return [FilmResponse(**film) for film in cached_films]
-        try:
-            docs = await self.get_by_search_from_elastic(search)
-            data = [Film(**row['_source']) for row in docs['hits']['hits']]
-            films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
-        except NotFoundError as ex:  # noqa: F841
-            #  TODO logging
-            return None
+        docs = await self.get_by_search_from_elastic(search)
+        if docs is None:
+            return
+        data = [Film(**row['_source']) for row in docs['hits']['hits']]
+        films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
         data = orjson.dumps([film.dict() for film in films])
-        await self.put_into_cache(key, data)
+        await self.put_into_cache(url, data)
         return films
 
 

@@ -5,9 +5,6 @@ from elasticsearch import NotFoundError
 from elasticsearch_dsl import Search
 
 from core.config import settings
-from models.film import DetailFilmResponse, Film, FilmResponse
-from models.genre import DetailGenre, Genre
-from models.person import FilmPerson, Person
 
 
 class RedisCacheMixin:
@@ -45,7 +42,7 @@ class RedisCacheMixin:
 
 
 class ElasticMixin:
-    async def get_by_id_from_elastic(self, _id: str) -> Union[Film, Person, Genre, None]:
+    async def get_by_id_from_elastic(self, _id: str) -> dict | None:
         """
         Получение данных из Elasticsearch по id.
 
@@ -53,7 +50,7 @@ class ElasticMixin:
             _id: id .
 
         Returns:
-            Union[Film, Person, Genre, None]: Объект модели ответа | None.
+            dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
@@ -66,7 +63,7 @@ class ElasticMixin:
     async def get_by_search_from_elastic(
         self,
         search: Search,
-    ) -> list[Union[FilmResponse, DetailFilmResponse, FilmPerson, DetailGenre, None]]:
+    ) -> dict | None:
         """
         Получение данных из Elasticsearch по id.
 
@@ -74,7 +71,7 @@ class ElasticMixin:
             search: Объект класса Search .
 
         Returns:
-            list[Union[...]]: Список объектов модели ответа | None.
+            dict | None.
         """
 
         try:
