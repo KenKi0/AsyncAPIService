@@ -677,7 +677,7 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "1e054ccb43d7a0a8e8607a5449df3ca710f5af41470b5780d8998aadc3d8b199"
+content-hash = "bfc8e5ef6f2b8c89ced2b46e7713f99b042ed47bf47d45e749cce4f08f7c70b2"
 
 [metadata.files]
 aiohttp = [

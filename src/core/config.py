@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseSettings
 
-from src.core.logger import LOGGING
+from core.logger import LOGGING
 
 logging_config.dictConfig(LOGGING)
 
@@ -42,6 +42,7 @@ class ProjectSettings(BaseConfig):
 
     PROJECT_NAME: str = 'movies'
     BASE_DIR = Path(__file__).parent.parent
+    FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
     redis: RedisSettings = RedisSettings()
     elastic: ElasticSettings = ElasticSettings()
 
