@@ -10,7 +10,7 @@ from api.v1.utils import SearchMixin
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import DetailFilmResponse, Film, FilmResponse
-from models.genre import DetailGenre
+from models.genre import FilmGenre
 from models.person import FilmPerson
 from services.utils import ElasticMixin, RedisCacheMixin
 
@@ -44,7 +44,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
             return
         data = Film(**doc['_source'])
         genre_list = (
-            [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
+            [FilmGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
         )
         actors_list = (
             [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors] if data.actors else []
