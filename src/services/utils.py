@@ -71,7 +71,7 @@ class ElasticMixin:
             search: Объект класса Search .
 
         Returns:
-            dict | None.
+            dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
