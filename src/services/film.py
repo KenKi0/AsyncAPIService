@@ -10,7 +10,7 @@ from api.v1.utils import SearchMixin
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import DetailFilmResponse, Film, FilmResponse
-from models.genre import DetailGenre
+from models.genre import FilmGenre
 from models.person import FilmPerson
 from services.utils import ElasticMixin, RedisCacheMixin
 
@@ -29,11 +29,9 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
     async def get_by_id(self, film_id: str, url: str) -> Optional[DetailFilmResponse]:
         """Получение и запись информации о фильме.
-
         Args:
             film_id: id фильма.
             url: Ключ для кеша.
-
         Returns:
             Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
@@ -46,7 +44,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
             return
         data = Film(**doc['_source'])
         genre_list = (
-            [DetailGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
+            [FilmGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
         )
         actors_list = (
             [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors] if data.actors else []
@@ -77,11 +75,9 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
     async def get_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
         """
         Получение и запись списка данных о фильмах.
-
         Args:
             url: Ключ для кеша.
             **kwargs: Параметры запроса.
-
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
