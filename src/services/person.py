@@ -107,15 +107,15 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
+        cached_film_person = await self.get_from_cache(url)
+        if cached_film_person:
+            cached_film_person = orjson.loads(cached_film_person)
+            return [FilmResponse(**film) for film in cached_film_person]
         search = self.get_search(
             sort=kwargs.get('sort'),
             _person=kwargs.get('_person'),
         )
         self.index = kwargs.get('index')
-        cached_film_person = await self.get_from_cache(url)
-        if cached_film_person:
-            cached_film_person = orjson.loads(cached_film_person)
-            return [FilmResponse(**film) for film in cached_film_person]
         docs = await self.get_by_search_from_elastic(search)
         if docs is None:
             return
