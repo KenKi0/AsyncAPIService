@@ -10,7 +10,7 @@ class Person(BaseModel):
 
     id: str  # noqa: VNE003
     full_name: str
-    roles: Optional[list[str]]
+    role: Optional[list[str]]
     film_ids: Optional[list[str]]
 
 
