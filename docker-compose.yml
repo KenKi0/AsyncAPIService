@@ -12,10 +12,14 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/postgresql/data
     expose:
-      - "5432"
+      - 5432
     env_file:
       - .env
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      timeout: 10s
+      retries: 5
 
   etl:
     image: kenki228/cinema_etl
@@ -24,8 +28,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - elastic
+      db:
+        condition: service_healthy
     restart: always
 
   fastapi:
@@ -36,8 +40,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - elastic
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     restart: always
@@ -48,7 +52,7 @@ services:
       - 'xpack.security.enabled=false'
       - "discovery.type=single-node"
     expose:
-      - "9200"
+      - 9200
     restart: always
     volumes:
       - es_data:/usr/share/elasticsearch/data
