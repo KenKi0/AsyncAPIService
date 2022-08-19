@@ -29,11 +29,9 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
     async def get_by_id(self, film_id: str, url: str) -> Optional[DetailFilmResponse]:
         """Получение и запись информации о фильме.
-
         Args:
             film_id: id фильма.
             url: Ключ для кеша.
-
         Returns:
             Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
@@ -77,11 +75,9 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
     async def get_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
         """
         Получение и запись списка данных о фильмах.
-
         Args:
             url: Ключ для кеша.
             **kwargs: Параметры запроса.
-
         Returns:
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
