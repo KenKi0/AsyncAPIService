@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .mixin import DefaultModel
+from models.utils import DefaultModel
 
 
 class Person(BaseModel):
@@ -10,7 +10,7 @@ class Person(BaseModel):
 
     id: str  # noqa: VNE003
     full_name: str
-    roles: Optional[list[str]]
+    role: Optional[list[str]]
     film_ids: Optional[list[str]]
 
 

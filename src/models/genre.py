@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .mixin import DefaultModel
+from models.utils import DefaultModel
 
 
 class Genre(BaseModel):
