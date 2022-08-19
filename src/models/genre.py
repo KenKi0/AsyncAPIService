@@ -17,3 +17,4 @@ class DetailGenre(DefaultModel):
     """Полная информация по жанрам."""
 
     name: str
+    description: Optional[str]

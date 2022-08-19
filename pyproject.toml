@@ -10,7 +10,7 @@ aioredis = "^2.0.1"
 elasticsearch = {version = "7.9.1", extras = ["async"]}
 fastapi = "^0.79.0"
 orjson = "^3.7.12"
-pydantic = "^1.9.2"
+pydantic = {extras = ["dotenv"], version = "^1.9.2"}
 uvicorn = "^0.18.2"
 uvloop = "^0.16.0"
 elasticsearch-dsl = "^7.4.0"

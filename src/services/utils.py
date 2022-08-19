@@ -82,6 +82,21 @@ class ElasticMixin:
             return None
         return docs
 
+    async def get_multi_from_elastic(self) -> dict | None:
+        """
+        Получение всех данных индекса из Elasticsearch.
+
+        Returns:
+            dict: Ответ elasticsearch в виде dict | None.
+        """
+        body = {'query': {'match_all': {}}}
+        try:
+            doc = await self.elastic.search(index=self.index, body=body)
+        except NotFoundError as ex:  # noqa: F841
+            #  TODO logging
+            return None
+        return doc
+
 
 def create_key(params: str) -> str:
     """Получение хешированного ключа для Redis.
