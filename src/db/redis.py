@@ -2,7 +2,9 @@ from typing import Optional
 
 from aioredis import Redis
 
-redis: Optional[Redis] = None
+from core.config import settings
+
+redis: Optional[Redis] = Redis(host=settings.redis.HOST)
 
 
 async def get_redis() -> Redis:

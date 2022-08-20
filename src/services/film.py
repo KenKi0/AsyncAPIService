@@ -6,13 +6,12 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from api.v1.utils import SearchMixin
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import DetailFilmResponse, Film, FilmResponse
 from models.genre import FilmGenre
 from models.person import FilmPerson
-from services.utils import ElasticMixin, RedisCacheMixin
+from services.utils import ElasticMixin, RedisCacheMixin, SearchMixin
 
 
 class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):

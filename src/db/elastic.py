@@ -2,7 +2,9 @@ from typing import Optional
 
 from elasticsearch import AsyncElasticsearch
 
-es: Optional[AsyncElasticsearch] = None
+from core.config import settings
+
+es: Optional[AsyncElasticsearch] = AsyncElasticsearch(hosts=settings.elastic.hosts)
 
 
 async def get_elastic() -> AsyncElasticsearch:
