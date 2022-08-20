@@ -8,25 +8,10 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
 --
--- Roles
---
-
--- CREATE ROLE app;
-ALTER ROLE app WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'md5c9377313baea21e871f6c06c4e62810d';
---
--- User Configurations
---
-
---
 -- User Config "app"
 --
 
 ALTER ROLE app SET search_path TO 'content', 'public';
-
-
-
-
-
 
 --
 -- Databases
