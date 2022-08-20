@@ -6,3 +6,4 @@
 заккоментируйте зависимость ***uvloop*** в ``pyproject.toml``
 
 Ссылка на [проект](https://github.com/KenKi2002/Async_API_sprint_1).
+Ссфлка на [проек с etl](https://github.com/KenKi2002/new_admin_panel_sprint_3)
