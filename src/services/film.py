@@ -6,12 +6,15 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from core.logger import logger as _logger
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import DetailFilmResponse, Film, FilmResponse
 from models.genre import FilmGenre
 from models.person import FilmPerson
 from services.utils import ElasticMixin, RedisCacheMixin, SearchMixin
+
+logger = _logger(__name__)
 
 
 class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
@@ -37,6 +40,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
         cached_film = await self.get_from_cache(url)
         if cached_film:
+            logger.debug(f'[+] Return film from cached. url:{url}')  # noqa: PIE803
             return DetailFilmResponse.parse_raw(cached_film)
         doc = await self.get_by_id_from_elastic(film_id)
         if doc is None:
@@ -69,6 +73,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
             directors=directors_list,
         )
         await self.put_into_cache(key=url, data=film.json())
+        logger.debug(f'[+] Return film from elastic. url:{url}')  # noqa: PIE803
         return film
 
     async def get_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
@@ -83,6 +88,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
 
         cached_films = await self.get_from_cache(url)
         if cached_films:
+            logger.debug(f'[+] Return films from cached. url:{url}')  # noqa: PIE803
             cached_films = orjson.loads(cached_films)
             return [FilmResponse(**film) for film in cached_films]
         search = self.get_search(
@@ -99,6 +105,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
         data = orjson.dumps([film.dict() for film in films])
         await self.put_into_cache(url, data)
+        logger.debug(f'[+] Return films from elastic. url:{url}')  # noqa: PIE803
         return films
 
 

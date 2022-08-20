@@ -3,9 +3,11 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
 
+from core.logger import logger as _logger
 from models.genre import DetailGenre
 from services.genre import GenreService, get_genre_service
 
+logger = _logger(__name__)
 router = APIRouter()
 
 
@@ -17,6 +19,8 @@ async def get_genre(
 ):
     genre = await service.get(uuid, str(request.url.include_query_params()))
     if not genre:
+        url = str(request.url.include_query_params())
+        logger.debug(f'[-] Genre not exists. url:{url}')  # noqa: PIE803
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre with specified uuid not exists')
     return genre
 
