@@ -5,6 +5,9 @@ from elasticsearch import NotFoundError
 from elasticsearch_dsl import Search
 
 from core.config import settings
+from core.logger import logger as _logger
+
+logger = _logger(__name__)
 
 
 class RedisCacheMixin:
@@ -37,7 +40,7 @@ class RedisCacheMixin:
             data: Данные для записи.
             ex: Время хранения данных.
         """
-
+        logger.debug(f'[+] Put data into cached. url:{key}')  # noqa: PIE803
         await self.redis.set(key, data, ex=ex)
 
 
