@@ -26,7 +26,7 @@ async def get_genre(
 ) -> DetailGenre | None:
     genre = await service.get(uuid, str(request.url.include_query_params()))
     if not genre:
-        logger.debug('[-] %s. uuid:%s', Msg.not_found.value, uuid)  # noqa: PIE803
+        logger.debug('[-] %s. uuid:%s', Msg.not_found.value, uuid)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return genre
 

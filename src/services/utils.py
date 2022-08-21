@@ -86,7 +86,7 @@ class RedisCacheMixin:
             data: Данные для записи.
             ex: Время хранения данных.
         """
-        logger.debug('[+] Put data into cached. url:%s', key)  # noqa: PIE803
+        logger.debug('[+] Put data into cached. url:%s', key)
         await self.redis.set(key, data, ex=ex)
 
 

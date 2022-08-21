@@ -37,7 +37,7 @@ async def search_person_response(
         url=url,
     )
     if not person:
-        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person
 
@@ -57,7 +57,7 @@ async def person_details(
     url = str(request.url.include_query_params())
     person = await person_service.get_by_id(person_id=person_id, url=url)
     if not person:
-        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person
 
@@ -79,6 +79,6 @@ async def person_films(
     url = str(request.url.include_query_params())
     person_films = await person_service.get_film_person_by_search(index=index, sort=sort, _person=person_id, url=url)
     if not person_films:
-        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person_films
