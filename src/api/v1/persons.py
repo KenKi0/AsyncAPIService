@@ -13,7 +13,13 @@ logger = _logger(__name__)
 router = APIRouter()
 
 
-@router.get('/search', response_model=list[DetailPerson])
+@router.get(
+    path='/search',
+    response_model=list[DetailPerson],
+    summary='Поиск персон',
+    description='Полнотекстовый поиск по персонам',
+    response_description='Список персон с их именем, ролями и фильмографией',
+)
 async def search_person_response(
     request: Request,
     query: str,
@@ -36,7 +42,13 @@ async def search_person_response(
     return person
 
 
-@router.get('/{person_id}', response_model=DetailPerson)
+@router.get(
+    path='/{person_id}',
+    response_model=DetailPerson,
+    summary='Поиск персоны по ID',
+    description='Поиск персоны по ID',
+    response_description='Имя, роль и фильмография персоны',
+)
 async def person_details(
     request: Request,
     person_id: str,
@@ -50,7 +62,13 @@ async def person_details(
     return person
 
 
-@router.get('/{person_id}/film', response_model=list[FilmResponse])
+@router.get(
+    path='/{person_id}/film',
+    response_model=list[FilmResponse],
+    summary='Поиск всех кинопроизведений персоны по его ID',
+    description='Поиск персоны по его ID и выдача всех его кинопроизведений',
+    response_description='Список названий и рейтингов кинопроизведений',
+)
 async def person_films(
     request: Request,
     person_id: str,

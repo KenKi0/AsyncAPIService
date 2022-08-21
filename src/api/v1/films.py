@@ -13,7 +13,13 @@ logger = _logger(__name__)
 router = APIRouter()
 
 
-@router.get('/', response_model=list[FilmResponse])
+@router.get(
+    path='/',
+    response_model=list[FilmResponse],
+    summary='Главная страница кинопроизведений',
+    description='Полный перечень кинопроизведений',
+    response_description='Список из названий и рейтингов кинопроизведений',
+)
 async def film_response(
     request: Request,
     sort: str,
@@ -36,7 +42,13 @@ async def film_response(
     return films
 
 
-@router.get('/search', response_model=list[FilmResponse])
+@router.get(
+    path='/search',
+    response_model=list[FilmResponse],
+    summary='Поиск кинопроизведений',
+    description='Полнотекстовый поиск по кинопроизведениям',
+    response_description='Список из названий и рейтингов кинопроизведений',
+)
 async def search_film_response(
     request: Request,
     query: str,
@@ -57,7 +69,13 @@ async def search_film_response(
     return films
 
 
-@router.get('/{film_id}', response_model=DetailFilmResponse)
+@router.get(
+    path='/{film_id}',
+    response_model=DetailFilmResponse,
+    summary='Поиск кинопроизведения по ID',
+    description='Поиск кинопроизведения по ID',
+    response_description='Полная информация о кинопроизведении',
+)
 async def film_details(
     request: Request,
     film_id: str,

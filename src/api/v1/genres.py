@@ -12,7 +12,13 @@ logger = _logger(__name__)
 router = APIRouter()
 
 
-@router.get('/{uuid}', response_model=DetailGenre)
+@router.get(
+    path='/{uuid}',
+    response_model=DetailGenre,
+    summary='Поиск жанра по ID',
+    description='Поиск жанра по ID',
+    response_description='Полная информация о жанре',
+)
 async def get_genre(
     uuid: str,
     request: Request,
@@ -26,7 +32,13 @@ async def get_genre(
     return genre
 
 
-@router.get('/', response_model=list[DetailGenre])
+@router.get(
+    path='/',
+    response_model=list[DetailGenre],
+    summary='Главная страница жанров',
+    description='Полный перечень жанров',
+    response_description='Список с полной информацией о жанрах',
+)
 async def get_genres(
     request: Request,
     service: GenreService = Depends(get_genre_service),
