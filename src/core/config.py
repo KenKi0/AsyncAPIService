@@ -45,9 +45,6 @@ class ProjectSettings(BaseConfig):
     FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
     redis: RedisSettings = RedisSettings()
     elastic: ElasticSettings = ElasticSettings()
-    film_msg: str = 'Film not found'
-    person_msg: str = 'Person not found'
-    genre_msg: str = 'Genre not found'
 
 
 settings = ProjectSettings()

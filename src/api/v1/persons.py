@@ -3,11 +3,11 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.requests import Request
 
-from core.config import settings
 from core.logger import logger as _logger
 from models.film import FilmResponse
 from models.person import DetailPerson
 from services.person import PersonService, get_person_service
+from services.response_messages import PersonMessages as Msg
 
 logger = _logger(__name__)
 router = APIRouter()
@@ -37,8 +37,8 @@ async def search_person_response(
         url=url,
     )
     if not person:
-        logger.debug(f'[-] {settings.person_msg}. url:{url}')  # noqa: PIE803
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=settings.person_msg)
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person
 
 
@@ -57,8 +57,8 @@ async def person_details(
     url = str(request.url.include_query_params())
     person = await person_service.get_by_id(person_id=person_id, url=url)
     if not person:
-        logger.debug(f'[-] {settings.person_msg}. url:{url}')  # noqa: PIE803
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=settings.person_msg)
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person
 
 
@@ -79,6 +79,6 @@ async def person_films(
     url = str(request.url.include_query_params())
     person_films = await person_service.get_film_person_by_search(index=index, sort=sort, _person=person_id, url=url)
     if not person_films:
-        logger.debug(f'[-] {settings.film_msg}. url:{url}')  # noqa: PIE803
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=settings.film_msg)
+        logger.debug('[-] %s. url:%s', Msg.not_found.value, url)  # noqa: PIE803
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
     return person_films
