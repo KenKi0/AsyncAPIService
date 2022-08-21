@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Optional
 
 import orjson
 from aioredis import Redis
@@ -29,7 +28,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         self.elastic = elastic
         self.index = index
 
-    async def get_by_id(self, film_id: str, url: str) -> Optional[DetailFilmResponse]:
+    async def get_by_id(self, film_id: str, url: str) -> DetailFilmResponse | None:
         """Получение и запись информации о фильме.
         Args:
             film_id: id фильма.
@@ -76,7 +75,7 @@ class FilmService(SearchMixin, RedisCacheMixin, ElasticMixin):
         logger.debug(f'[+] Return film from elastic. url:{url}')  # noqa: PIE803
         return film
 
-    async def get_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
+    async def get_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
         Args:

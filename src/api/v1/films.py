@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -20,8 +19,8 @@ async def film_response(
     film_service: FilmService = Depends(get_film_service),
     page_num: int = Query(default=1, alias='page[number]'),
     page_size: int = Query(default=50, alias='page[size]'),
-    _filter: Optional[UUID] = Query(default=None, alias='filter[genre]'),
-) -> Optional[list[FilmResponse]]:
+    _filter: UUID | None = Query(default=None, alias='filter[genre]'),
+) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
     films = await film_service.get_by_search(
         sort=sort,
@@ -43,7 +42,7 @@ async def search_film_response(
     film_service: FilmService = Depends(get_film_service),
     page_num: int = Query(default=1, alias='page[number]'),
     page_size: int = Query(default=50, alias='page[size]'),
-) -> Optional[list[FilmResponse]]:
+) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
     films = await film_service.get_by_search(
         query=query,
@@ -62,7 +61,7 @@ async def film_details(
     request: Request,
     film_id: str,
     film_service: FilmService = Depends(get_film_service),
-) -> DetailFilmResponse:
+) -> DetailFilmResponse | None:
     url = str(request.url.include_query_params())
     film = await film_service.get_by_id(film_id=film_id, url=url)
     if not film:

@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.requests import Request
@@ -20,7 +19,7 @@ async def search_person_response(
     person_service: PersonService = Depends(get_person_service),
     page_num: int = Query(default=1, alias='page[number]'),
     page_size: int = Query(default=50, alias='page[size]'),
-) -> Optional[list[DetailPerson]]:
+) -> list[DetailPerson] | None:
     index = 'persons'
     url = str(request.url.include_query_params())
     person = await person_service.get_person_by_search(
@@ -41,7 +40,7 @@ async def person_details(
     request: Request,
     person_id: str,
     person_service: PersonService = Depends(get_person_service),
-) -> DetailPerson:
+) -> DetailPerson | None:
     url = str(request.url.include_query_params())
     person = await person_service.get_by_id(person_id=person_id, url=url)
     if not person:
@@ -55,7 +54,7 @@ async def person_films(
     request: Request,
     person_id: str,
     person_service: PersonService = Depends(get_person_service),
-) -> list[FilmResponse]:
+) -> list[FilmResponse] | None:
     sort = '-imdb_rating'
     index = 'movies'
     url = str(request.url.include_query_params())

@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Optional
 
 import orjson
 from aioredis import Redis
@@ -28,7 +27,7 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
         self.elastic = elastic
         self.index = index
 
-    async def get_by_id(self, url: str, person_id: str, index: str = 'persons') -> Optional[DetailPerson]:
+    async def get_by_id(self, url: str, person_id: str, index: str = 'persons') -> DetailPerson | None:
         """Получение и запись информации о персоне.
 
         Args:
@@ -59,7 +58,7 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
         logger.debug(f'[+] Return person from elastic. url:{url}')  # noqa: PIE803
         return person
 
-    async def get_person_by_search(self, url: str, **kwargs) -> Optional[list[DetailPerson]]:
+    async def get_person_by_search(self, url: str, **kwargs) -> list[DetailPerson] | None:
         """
         Получение и запись списка данных о фильмах.
 
@@ -101,7 +100,7 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
         logger.debug(f'[+] Return persons from elastic. url:{url}')  # noqa: PIE803
         return persons
 
-    async def get_film_person_by_search(self, url: str, **kwargs) -> Optional[list[FilmResponse]]:
+    async def get_film_person_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
 
@@ -150,7 +149,3 @@ def get_person_service(
     """
 
     return PersonService(redis, elastic)
-
-
-if __name__ == '__main__':
-    ...

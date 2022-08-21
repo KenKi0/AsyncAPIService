@@ -49,7 +49,7 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         logger.debug(f'[+] Return genre from elastic. url:{url}')  # noqa: PIE803
         return genre
 
-    async def get_multi(self, url: str):
+    async def get_multi(self, url: str) -> list[DetailGenre] | None:
         """Получение информации о всех жанрах.
 
         Args:

@@ -16,7 +16,7 @@ async def get_genre(
     uuid: str,
     request: Request,
     service: GenreService = Depends(get_genre_service),
-):
+) -> DetailGenre | None:
     genre = await service.get(uuid, str(request.url.include_query_params()))
     if not genre:
         url = str(request.url.include_query_params())
@@ -29,5 +29,5 @@ async def get_genre(
 async def get_genres(
     request: Request,
     service: GenreService = Depends(get_genre_service),
-):
+) -> list[DetailGenre] | None:
     return await service.get_multi(str(request.url.include_query_params()))
