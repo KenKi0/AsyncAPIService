@@ -1,13 +1,11 @@
 from typing import Optional
 
-from pydantic import BaseModel
-
 from models.genre import FilmGenre
 from models.person import FilmPerson
 from models.utils import DefaultModel
 
 
-class Film(BaseModel):
+class Film(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
     id: str  # noqa: VNE003
@@ -25,6 +23,7 @@ class Film(BaseModel):
 class FilmResponse(DefaultModel):
     """Информация о фильме на главной странице | странице поиска."""
 
+    uuid: str
     title: str
     imdb_rating: float
 
