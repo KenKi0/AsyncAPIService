@@ -17,8 +17,8 @@ async def search_person_response(
     request: Request,
     query: str,
     person_service: PersonService = Depends(get_person_service),
-    page_num: int = Query(default=1, alias='page[number]'),
-    page_size: int = Query(default=50, alias='page[size]'),
+    page_num: int = Query(default=1, alias='page[number]', ge=1),
+    page_size: int = Query(default=50, alias='page[size]', ge=1),
 ) -> list[DetailPerson] | None:
     index = 'persons'
     url = str(request.url.include_query_params())

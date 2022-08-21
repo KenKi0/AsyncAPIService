@@ -17,8 +17,8 @@ async def film_response(
     request: Request,
     sort: str,
     film_service: FilmService = Depends(get_film_service),
-    page_num: int = Query(default=1, alias='page[number]'),
-    page_size: int = Query(default=50, alias='page[size]'),
+    page_num: int = Query(default=1, alias='page[number]', ge=1),
+    page_size: int = Query(default=50, alias='page[size]', ge=1),
     _filter: UUID | None = Query(default=None, alias='filter[genre]'),
 ) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
@@ -40,8 +40,8 @@ async def search_film_response(
     request: Request,
     query: str,
     film_service: FilmService = Depends(get_film_service),
-    page_num: int = Query(default=1, alias='page[number]'),
-    page_size: int = Query(default=50, alias='page[size]'),
+    page_num: int = Query(default=1, alias='page[number]', ge=1),
+    page_size: int = Query(default=50, alias='page[size]', ge=1),
 ) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
     films = await film_service.get_by_search(
