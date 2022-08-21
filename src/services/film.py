@@ -125,7 +125,3 @@ def get_film_service(
     """
 
     return FilmService(redis, elastic)
-
-
-if __name__ == '__main__':
-    ...
