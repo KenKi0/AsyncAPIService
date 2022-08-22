@@ -1,11 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel
-
 from models.utils import DefaultModel
 
 
-class Genre(BaseModel):
+class Genre(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
     id: str  # noqa: VNE003
@@ -16,6 +14,7 @@ class Genre(BaseModel):
 class FilmGenre(DefaultModel):
     """Информация о жанре."""
 
+    uuid: str
     name: str
 
 

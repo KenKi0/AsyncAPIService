@@ -1,5 +1,5 @@
 from hashlib import md5
-from typing import Optional, Union
+from typing import Optional
 
 from elasticsearch import NotFoundError
 from elasticsearch_dsl import Q, Search
@@ -57,7 +57,7 @@ class SearchMixin:
 
 
 class RedisCacheMixin:
-    async def get_from_cache(self, key: str) -> Union[str, bytes, None]:
+    async def get_from_cache(self, key: str) -> str | bytes | None:
         """
         Получение данных из кеша.
 
@@ -65,7 +65,7 @@ class RedisCacheMixin:
             key: Ключ.
 
         Returns:
-            Union[str, bytes, None]: Данные из кеша.
+            str | bytes | None: Данные из кеша.
         """
         data = await self.redis.get(key)
         if not data:
@@ -86,7 +86,7 @@ class RedisCacheMixin:
             data: Данные для записи.
             ex: Время хранения данных.
         """
-        logger.debug(f'[+] Put data into cached. url:{key}')  # noqa: PIE803
+        logger.debug('[+] Put data into cached. url:%s', key)
         await self.redis.set(key, data, ex=ex)
 
 
@@ -105,7 +105,7 @@ class ElasticMixin:
         try:
             doc = await self.elastic.get(self.index, _id)
         except NotFoundError as ex:  # noqa: F841
-            #  TODO logging
+            logger.info('Trying to get non-existent document with id: %s, in index: %s', _id, self.index)
             return None
         return doc
 
@@ -127,7 +127,7 @@ class ElasticMixin:
             query = search.to_dict()
             docs = await self.elastic.search(index=self.index, body=query)
         except NotFoundError as ex:  # noqa: F841
-            #  TODO logging
+            logger.info('No results found for query: \n%s\nIn index: %s', search.to_dict(), self.index)
             return None
         return docs
 
@@ -142,7 +142,7 @@ class ElasticMixin:
         try:
             doc = await self.elastic.search(index=self.index, body=body)
         except NotFoundError as ex:  # noqa: F841
-            #  TODO logging
+            logger.info('No results found for all query in index: %s', self.index)
             return None
         return doc
 

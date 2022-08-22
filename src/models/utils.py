@@ -9,8 +9,6 @@ def orjson_dumps(value, *, default):
 class DefaultModel(BaseModel):
     """Mixin."""
 
-    uuid: str
-
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps

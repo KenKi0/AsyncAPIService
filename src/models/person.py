@@ -1,11 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel
-
 from models.utils import DefaultModel
 
 
-class Person(BaseModel):
+class Person(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
     id: str  # noqa: VNE003
@@ -17,6 +15,7 @@ class Person(BaseModel):
 class FilmPerson(DefaultModel):
     """Информация о персонах."""
 
+    uuid: str
     full_name: str
 
 

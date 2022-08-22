@@ -38,7 +38,7 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         """
         cached_genre = await self.get_from_cache(url)
         if cached_genre:
-            logger.debug(f'[+] Return genre from cached. url:{url}')  # noqa: PIE803
+            logger.debug('[+] Return genre from cached. url:%s', url)
             return DetailGenre.parse_raw(cached_genre)
         doc = await self.get_by_id_from_elastic(uuid)
         if doc is None:
@@ -46,10 +46,10 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         elastic_data = Genre(**doc['_source'])
         genre = DetailGenre(uuid=elastic_data.id, name=elastic_data.name, description=elastic_data.description)
         await self.put_into_cache(url, genre.json())
-        logger.debug(f'[+] Return genre from elastic. url:{url}')  # noqa: PIE803
+        logger.debug('[+] Return genre from elastic. url:%s', url)
         return genre
 
-    async def get_multi(self, url: str):
+    async def get_multi(self, url: str) -> list[DetailGenre] | None:
         """Получение информации о всех жанрах.
 
         Args:
@@ -60,7 +60,7 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         """
         cached_genres = await self.get_from_cache(url)
         if cached_genres:
-            logger.debug(f'[+] Return genres from cached. url:{url}')  # noqa: PIE803
+            logger.debug('[+] Return genres from cached. url:%s', url)
             cached_genres = orjson.loads(cached_genres)
             return [DetailGenre(**genre) for genre in cached_genres]
         docs = await self.get_multi_from_elastic()
@@ -70,7 +70,7 @@ class GenreService(SearchMixin, RedisCacheMixin, ElasticMixin):
         genres = [DetailGenre(uuid=row.id, name=row.name, description=row.description) for row in elastic_data]
         data_to_cache = orjson.dumps([genre.dict() for genre in genres])
         await self.put_into_cache(url, data_to_cache)
-        logger.debug(f'[+] Return genres from elastic. url:{url}')  # noqa: PIE803
+        logger.debug('[+] Return genres from elastic. url:%s', url)
         return genres
 
 

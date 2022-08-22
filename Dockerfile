@@ -23,4 +23,4 @@ COPY src/ ./src
 COPY tests ./tests
 COPY .flake8 .flake8
 
-CMD python3 src/main.py
+CMD cd src && gunicorn --bind 0.0.0.0:8000 -w 4 -k uvicorn.workers.UvicornH11Worker main:app
