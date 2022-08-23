@@ -56,16 +56,15 @@ def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
                 orjson.dumps(row).decode('utf-8'),
             ],
         )
-    return bulk_query
+    return '\n'.join(bulk_query) + '\n'
 
 
 @pytest_asyncio.fixture
 def es_write_data(es_client: AsyncElasticsearch):
     async def inner(index: str, data: list[dict]):
         bulk_query = get_es_bulk_query(data, index, test_settings.es_id_field)
-        str_query = '\n'.join(bulk_query) + '\n'
 
-        response = await es_client.bulk(str_query, refresh=True)
+        response = await es_client.bulk(bulk_query, refresh=True)
 
         if response['errors']:
             raise Exception('Ошибка записи данных в Elasticsearch')
