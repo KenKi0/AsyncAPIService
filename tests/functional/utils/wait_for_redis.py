@@ -6,7 +6,7 @@ from aioredis import Redis
 
 
 async def main():
-    redis = Redis(host=os.environ.get('ELASTIC_HOST'))
+    redis = Redis(host=os.environ.get('REDIS_HOST'))
 
     while True:
         if await redis.ping():
