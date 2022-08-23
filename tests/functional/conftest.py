@@ -1,0 +1,75 @@
+import asyncio
+
+import aiohttp
+import orjson
+import pytest
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
+from settings import test_settings
+
+
+@pytest.fixture(scope='session')
+def event_loop():
+    loop = asyncio.get_event_loop()
+
+    yield loop
+
+    loop.close()
+
+
+@pytest.fixture(scope='session')
+async def es_client():
+    es = AsyncElasticsearch(hosts=test_settings.es_host)
+
+    for index in test_settings.es_index:
+        if not es.indices.exists(index=index):
+            es.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
+
+    yield es
+
+    await es.close()
+
+
+@pytest.fixture(scope='session')
+async def redis_client():
+    rd = Redis(host=test_settings.redis_host)
+
+    yield rd
+
+    await rd.close()
+
+
+def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
+    bulk_query = []
+    for row in es_data:
+        bulk_query.extend(
+            [
+                orjson.dumps({'index': {'_index': index, '_id': row[id_field]}}).decode('utf-8'),
+                orjson.dumps(row).decode('utf-8'),
+            ],
+        )
+    return bulk_query
+
+
+@pytest.fixture
+def es_write_data(es_client):
+    async def inner(index: str, data: list[dict]):
+        bulk_query = get_es_bulk_query(data, index, test_settings.es_id_field)
+        str_query = '\n'.join(bulk_query) + '\n'
+
+        response = await es_client.bulk(str_query, refresh=True)
+
+        if response['errors']:
+            raise Exception('Ошибка записи данных в Elasticsearch')
+
+    return inner
+
+
+@pytest.fixture
+def make_get_request():
+    async def inner(handler_url: str, query_data: dict):
+        async with aiohttp.ClientSession() as session:
+            url = test_settings.service_url + handler_url
+            yield session.get(url, params=query_data)
+
+    return inner
