@@ -1,11 +1,12 @@
 import asyncio
+import os
 import time
 
 from aioredis import Redis
 
 
 async def main():
-    redis = Redis(host='redis')
+    redis = Redis(host=os.environ.get('ELASTIC_HOST'))
 
     while True:
         if await redis.ping():

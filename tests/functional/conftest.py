@@ -3,40 +3,48 @@ import asyncio
 import aiohttp
 import orjson
 import pytest
+import pytest_asyncio
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
+
 from settings import test_settings
 
 
 @pytest.fixture(scope='session')
 def event_loop():
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
 
     yield loop
 
     loop.close()
 
 
-@pytest.fixture(scope='session')
+@pytest_asyncio.fixture(scope='session')
 async def es_client():
     es = AsyncElasticsearch(hosts=test_settings.es_host)
 
     for index in test_settings.es_index:
-        if not es.indices.exists(index=index):
-            es.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
+        if not await es.indices.exists(index=index):
+            await es.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
 
     yield es
 
     await es.close()
 
 
-@pytest.fixture(scope='session')
+@pytest_asyncio.fixture(scope='session')
 async def redis_client():
     rd = Redis(host=test_settings.redis_host)
 
     yield rd
 
     await rd.close()
+
+
+@pytest_asyncio.fixture(scope='session')
+async def aiohttp_client():
+    async with aiohttp.ClientSession() as client:
+        yield client
 
 
 def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
@@ -51,8 +59,8 @@ def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
     return bulk_query
 
 
-@pytest.fixture
-def es_write_data(es_client):
+@pytest_asyncio.fixture
+def es_write_data(es_client: AsyncElasticsearch):
     async def inner(index: str, data: list[dict]):
         bulk_query = get_es_bulk_query(data, index, test_settings.es_id_field)
         str_query = '\n'.join(bulk_query) + '\n'
@@ -65,11 +73,11 @@ def es_write_data(es_client):
     return inner
 
 
-@pytest.fixture
-def make_get_request():
+@pytest_asyncio.fixture
+def make_get_request(aiohttp_client: aiohttp.ClientSession):
     async def inner(handler_url: str, query_data: dict):
-        async with aiohttp.ClientSession() as session:
-            url = test_settings.service_url + handler_url
-            yield session.get(url, params=query_data)
+        url = test_settings.service_url + handler_url
+        async with aiohttp_client.get(url, params=query_data) as response:
+            yield response
 
     return inner
