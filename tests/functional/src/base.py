@@ -7,7 +7,7 @@ class BaseTest:
 
     index: str = 'movies'
     data_id: list[dict] = es_test_data.film
-    handler_url_id: str = '/api/v1/films/'
+    handler_url: str = '/api/v1/films/'
     _id: str = 'f111'
 
     @pytest.mark.asyncio
@@ -15,7 +15,7 @@ class BaseTest:
         """Проверка поиска по id."""
 
         await es_write_data(self.index, self.data_id)
-        response = await anext(make_get_request_by_id(self.handler_url_id, self._id))
+        response = await anext(make_get_request_by_id(self.handler_url, self._id))
 
         assert response.status == 200
         body = await response.json()
@@ -25,17 +25,17 @@ class BaseTest:
 class BaseSearchTest(BaseTest):
     """Поиск по query."""
 
-    index: str = 'movies'
+    index_search: str = 'movies'
     data_query: list[dict] = es_test_data.movies
     handler_url_search: str = '/api/v1/films/search/'
-    query: list[dict] = {'query': 'Star'}
+    query: dict = {'query': 'Star'}
     _len: int = 20
 
     @pytest.mark.asyncio
     async def test_search_data(self, make_get_request_by_search, es_write_data):
         """Проверка поиска фильмов по названию."""
 
-        await es_write_data(self.index, self.data_query)
+        await es_write_data(self.index_search, self.data_query)
         response = await anext(make_get_request_by_search(self.handler_url_search, self.query))
 
         assert response.status == 200
