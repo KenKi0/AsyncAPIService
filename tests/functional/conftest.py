@@ -72,6 +72,12 @@ def es_write_data(es_client: AsyncElasticsearch):
 
 
 @pytest_asyncio.fixture
+def redis_write_data(redis_client: Redis):
+    async def inner(data: list[dict]):
+        pass
+
+
+@pytest_asyncio.fixture
 def make_get_request_by_search(aiohttp_client: aiohttp.ClientSession):
     async def inner(handler_url: str, query_data: dict):
         url = test_settings.service_url + handler_url
