@@ -108,3 +108,15 @@ def film_by_id_exepted():
             },
         ],
     }
+
+
+@pytest.fixture
+def film_full_exepted():
+    return [
+        {
+            'uuid': film.get('id'),
+            'title': film.get('title'),
+            'imdb_rating': film.get('imdb_rating'),
+        }
+        for film in movies
+    ]
