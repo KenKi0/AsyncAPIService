@@ -62,7 +62,7 @@ async def test_full_films(make_get_request, es_write_data, film_full_exepted):  
 
     async with make_get_request(
         handler_url='/api/v1/films/',
-        query_data={'sort': '-imdb_rating'},
+        query_data={'sort': 'imdb_rating'},
     ) as response:
 
         def asc(rating):
@@ -70,6 +70,13 @@ async def test_full_films(make_get_request, es_write_data, film_full_exepted):  
 
         body = await response.json()
         assert body == sorted(film_full_exepted, key=asc), 'Проверка соответствия данных (ASC).'
+
+    async with make_get_request(
+        handler_url='/api/v1/films/',
+        query_data={'sort': 'title'},
+    ) as response:
+
+        assert response.status == 422, 'Проверка сортировки с невалидными данными.'
 
 
 @pytest.mark.asyncio
@@ -89,3 +96,17 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
         body = await response.json()
         assert len(body) == len(film_pagination_exepted[10:20]), 'Проверка наличия всех фильмов.'
         assert body == film_pagination_exepted[10:20], 'Проверка соответствия данных.'
+
+    async with make_get_request(
+        handler_url='/api/v1/films/',
+        query_data={'sort': '-imdb_rating', 'page[number]': 0, 'page[size]': 10},
+    ) as response:
+
+        assert response.status == 422, 'Проверка пагинации с невалидными данными (page[number] < 1).'
+
+    async with make_get_request(
+        handler_url='/api/v1/films/',
+        query_data={'sort': '-imdb_rating', 'page[number]': 1, 'page[size]': -10},
+    ) as response:
+
+        assert response.status == 422, 'Проверка пагинации с невалидными данными (page[size] < 1).'
