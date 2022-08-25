@@ -1,6 +1,6 @@
 import pytest
 from testdata import index_fillings as es_test_data
-from testdata.index_fillings import film_by_id_exepted, film_full_exepted, film_pagination_exepted  # noqa: F401
+from testdata.films import film_by_id_exepted, film_full_exepted, film_pagination_exepted  # noqa: F401
 
 
 @pytest.mark.asyncio
