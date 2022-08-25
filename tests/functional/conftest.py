@@ -90,7 +90,7 @@ def make_get_request_by_search(aiohttp_client: aiohttp.ClientSession):
 @pytest_asyncio.fixture
 def make_get_request_by_id(aiohttp_client: aiohttp.ClientSession):
     async def inner(handler_url: str, _id: str):
-        url = ''.join(test_settings.service_url, handler_url, _id)
+        url = ''.join([test_settings.service_url, handler_url, _id])
         async with aiohttp_client.get(url) as response:
             yield response
 
