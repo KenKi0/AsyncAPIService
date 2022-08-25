@@ -1,13 +1,13 @@
-import aioredis
 import uvicorn
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from api.v1 import films, genres, persons
 from core.config import settings
 from core.logger import LOGGING
-from db import elastic, redis
+from db import cache, elastic, redis
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -16,10 +16,12 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
+cache_middleware = cache.CacheMiddleWare(redis.redis)
+app.add_middleware(BaseHTTPMiddleware, dispatch=cache_middleware)
+
 
 @app.on_event('startup')
 async def startup():
-    redis.redis = await aioredis.from_url(settings.redis.url, max_connections=20, decode_responses=True)
     elastic.es = AsyncElasticsearch(hosts=settings.elastic.hosts)
 
 
