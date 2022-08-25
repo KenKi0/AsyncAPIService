@@ -1,29 +1,24 @@
 from functools import lru_cache
 
-import orjson
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from core.logger import logger as _logger
 from db.elastic import get_elastic
-from db.redis import get_redis
 from models.film import Film, FilmResponse
 from models.person import DetailPerson, Person
-from services.utils import ElasticMixin, RedisCacheMixin, SearchMixin
+from services.utils import ElasticMixin, SearchMixin
 
 logger = _logger(__name__)
 
 
-class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index: str = 'persons'):
+class PersonService(SearchMixin, ElasticMixin):
+    def __init__(self, elastic: AsyncElasticsearch, index: str = 'persons'):
         """
         Args:
-            redis: Соединение с Redis.
             elastic: Соединение с Elasticsearch.
         """
 
-        self.redis = redis
         self.elastic = elastic
         self.index = index
 
@@ -39,10 +34,6 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             Optional[DetailPerson]: Объект модели DetailPerson | None.
         """
 
-        cached_person = await self.get_from_cache(url)
-        if cached_person:
-            logger.debug('[+] Return person films from cached. url:%s', url)
-            return DetailPerson.parse_raw(cached_person)
         self.index = index
         doc = await self.get_by_id_from_elastic(person_id)
         if doc is None:
@@ -54,7 +45,6 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             role=data.role,
             film_ids=data.film_ids,
         )
-        await self.put_into_cache(key=url, data=person.json())
         logger.debug('[+] Return person from elastic. url::%s', url)
         return person
 
@@ -70,11 +60,6 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             Optional[list[DetailPerson]]: Список объектов модели DetailPerson | None.
         """
 
-        cached_person = await self.get_from_cache(url)
-        if cached_person:
-            cached_person = orjson.loads(cached_person)
-            logger.debug('[+] Return persons from cached. url:%s', url)
-            return [DetailPerson(**person) for person in cached_person]
         search = self.get_search(
             kwargs.get('query'),
             kwargs.get('sort'),
@@ -95,8 +80,6 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             )
             for row in data
         ]
-        data = orjson.dumps([person.dict() for person in persons])
-        await self.put_into_cache(url, data)
         logger.debug('[+] Return persons from elastic. url:%s', url)
         return persons
 
@@ -112,11 +95,6 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
-        cached_film_person = await self.get_from_cache(url)
-        if cached_film_person:
-            cached_film_person = orjson.loads(cached_film_person)
-            logger.debug('[+] Return person films from cached. url:%s', url)
-            return [FilmResponse(**film) for film in cached_film_person]
         search = self.get_search(
             sort=kwargs.get('sort'),
             _person=kwargs.get('_person'),
@@ -127,25 +105,21 @@ class PersonService(SearchMixin, RedisCacheMixin, ElasticMixin):
             return
         data = [Film(**row['_source']) for row in docs['hits']['hits']]
         person_films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
-        data = orjson.dumps([film.dict() for film in person_films])
-        await self.put_into_cache(url, data)
         logger.debug('[+] Return person films from elastic. url:%s', url)
         return person_films
 
 
 @lru_cache()
 def get_person_service(
-    redis: Redis = Depends(get_redis),
     elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> PersonService:
     """Провайдер для PersonService.
 
     Args:
-        redis: Соединение с Redis.
         elastic: Соединение с Elasticsearch.
 
         Returns:
             PersonService: Объект класса PersonService.
     """
 
-    return PersonService(redis, elastic)
+    return PersonService(elastic)
