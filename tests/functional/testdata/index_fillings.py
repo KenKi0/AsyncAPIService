@@ -62,9 +62,10 @@ genres = [
 ]
 
 persons = [
-    {'id': 'p000', 'full_name': 'Stan', 'role': 'director', 'film_ids': film_ids_1 + film_ids_2},
-    {'id': 'p111', 'full_name': 'Ann', 'role': 'director', 'film_ids': film_ids_1 + film_ids_2},
-    {'id': 'p222', 'full_name': 'Bob', 'role': 'director', 'film_ids': film_ids_2},
-    {'id': 'p333', 'full_name': 'Ben', 'role': 'director', 'film_ids': film_ids_1},
-    {'id': 'p444', 'full_name': 'Howard', 'role': 'director', 'film_ids': film_ids_2},
+    {'id': 'p777', 'full_name': 'Joe', 'role': ['actor', 'director'], 'film_ids': ['f000', 'f111', 'f222']},
+    {'id': 'p000', 'full_name': 'Stan', 'role': ['director'], 'film_ids': film_ids_1 + film_ids_2},
+    {'id': 'p111', 'full_name': 'Ann', 'role': ['director'], 'film_ids': film_ids_1 + film_ids_2},
+    {'id': 'p222', 'full_name': 'Bob', 'role': ['director'], 'film_ids': film_ids_2},
+    {'id': 'p333', 'full_name': 'Ben', 'role': ['director'], 'film_ids': film_ids_1},
+    {'id': 'p444', 'full_name': 'Howard', 'role': ['director'], 'film_ids': film_ids_2},
 ]
