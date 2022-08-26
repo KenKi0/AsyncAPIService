@@ -1,26 +1,23 @@
 from functools import lru_cache
 
+from elasticsearch_dsl import Q, Search
 from fastapi import Depends
 
 from core.logger import logger as _logger
 from db.repository import Repository, get_repository
-from models.film import DetailFilmResponse, Film, FilmResponse
-from models.genre import FilmGenre
-from models.person import FilmPerson
-from services.utils import SearchMixin
+from models.film import ESFilm
 
 logger = _logger(__name__)
 
 
-class FilmService(SearchMixin):
-    def __init__(self, repo: Repository, index: str = 'movies'):
+class FilmService:
+    def __init__(self, repo: Repository):
         """
         :param repo:  класс реализущией интерфейс Repository
         """
         self.repo = repo
-        self.index = index  # TODO избавиться от self.index
 
-    async def get_by_id(self, film_id: str) -> DetailFilmResponse | None:
+    async def get_by_id(self, film_id: str) -> dict | None:
         """
         Получение и запись информации о фильме.
         :param film_id: id фильма
@@ -29,56 +26,31 @@ class FilmService(SearchMixin):
         doc = await self.repo.get('movies', film_id)
         if doc is None:
             return
-        data = Film(**doc['_source'])
-        genre_list = (
-            [FilmGenre(uuid=item.get('id'), name=item.get('name')) for item in data.genre] if data.genre else []
-        )
-        actors_list = (
-            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.actors] if data.actors else []
-        )
-        writers_list = (
-            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.writers]
-            if data.writers
-            else []
-        )
-        directors_list = (
-            [FilmPerson(uuid=item.get('id'), full_name=item.get('name')) for item in data.director]
-            if data.director
-            else []
-        )
-        film = DetailFilmResponse(
-            uuid=data.id,
-            title=data.title,
-            imdb_rating=data.imdb_rating,
-            description=data.description,
-            actors=actors_list,
-            genre=genre_list,
-            writers=writers_list,
-            directors=directors_list,
-        )
+        data = ESFilm(**doc['_source']).dict()
         logger.debug('[+] Return film from elastic. id:%s', film_id)
-        return film
+        return data
 
-    async def get_by_search(self, **kwargs) -> list[FilmResponse] | None:
+    async def get_by_search(self, **kwargs) -> list[dict] | None:
         """
         Получение и запись списка данных о фильмах.
         :param kwargs: Параметры запроса
         :return: Список объектов модели FilmResponse
         """
-        search = self.get_search(
-            kwargs.get('query'),
-            kwargs.get('sort'),
-            kwargs.get('page_num'),
-            kwargs.get('page_size'),
-            kwargs.get('_filter'),
-        )
+        start = (kwargs['page_num'] - 1) * kwargs['page_size']
+        stop = kwargs['page_size'] * kwargs['page_num']
+        search = Search(index='movies').query('match_all')[start:stop]
+        if query := kwargs.get('query'):
+            search = search.query('multi_match', query=query, fuzziness='auto')
+        if sort := kwargs.get('sort'):
+            search = search.sort(sort)
+        if _filter := kwargs.get('_filter'):
+            search = search.query('bool', should=[Q('nested', path='genre', query=Q('match', genre__id=_filter))])
         docs = await self.repo.search('movies', search)
         if docs is None:
             return
-        data = [Film(**row['_source']) for row in docs['hits']['hits']]
-        films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
+        data = [ESFilm(**row['_source']).dict() for row in docs['hits']['hits']]
         logger.debug('[+] Return films from elastic.')
-        return films
+        return data
 
 
 @lru_cache()

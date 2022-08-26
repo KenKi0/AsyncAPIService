@@ -1,24 +1,26 @@
 from typing import Optional
 
+from pydantic.fields import Field
+
 from models.utils import DefaultModel
 
 
-class Genre(DefaultModel):
+class ESGenre(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
-    id: str  # noqa: VNE003
+    uuid: str = Field(..., alias='id')  # noqa: VNE003
     name: str
     description: Optional[str]
 
 
-class FilmGenre(DefaultModel):
+class Genre(DefaultModel):
     """Информация о жанре."""
 
     uuid: str
     name: str
 
 
-class DetailGenre(FilmGenre):
+class DetailGenre(Genre):
     """Полная информация по жанрам."""
 
     description: Optional[str]
