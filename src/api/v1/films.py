@@ -20,16 +20,16 @@ router = APIRouter()
     description='Полный перечень кинопроизведений',
     response_description='Список из названий и рейтингов кинопроизведений',
 )
-async def film_response(
+async def films(
     request: Request,
     sort: str,
-    film_service: FilmService = Depends(get_film_service),
+    service: FilmService = Depends(get_film_service),
     page_num: int = Query(default=1, alias='page[number]', ge=1),
     page_size: int = Query(default=50, alias='page[size]', ge=1),
     _filter: UUID | None = Query(default=None, alias='filter[genre]'),
 ) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
-    films = await film_service.get_by_search(
+    films = await service.get_by_search(
         sort=sort,
         page_size=page_size,
         page_num=page_num,
@@ -49,15 +49,15 @@ async def film_response(
     description='Полнотекстовый поиск по кинопроизведениям',
     response_description='Список из названий и рейтингов кинопроизведений',
 )
-async def search_film_response(
+async def search_film(
     request: Request,
     query: str,
-    film_service: FilmService = Depends(get_film_service),
+    service: FilmService = Depends(get_film_service),
     page_num: int = Query(default=1, alias='page[number]', ge=1),
     page_size: int = Query(default=50, alias='page[size]', ge=1),
 ) -> list[FilmResponse] | None:
     url = str(request.url.include_query_params())
-    films = await film_service.get_by_search(
+    films = await service.get_by_search(
         query=query,
         page_num=page_num,
         page_size=page_size,
@@ -79,10 +79,10 @@ async def search_film_response(
 async def film_details(
     request: Request,
     film_id: str,
-    film_service: FilmService = Depends(get_film_service),
+    service: FilmService = Depends(get_film_service),
 ) -> DetailFilmResponse | None:
     url = str(request.url.include_query_params())
-    film = await film_service.get_by_id(film_id=film_id, url=url)
+    film = await service.get_by_id(film_id=film_id, url=url)
     if not film:
         logger.debug('[-] %s. url:%s', Msg.not_found.value, url)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
