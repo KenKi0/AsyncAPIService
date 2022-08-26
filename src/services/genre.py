@@ -14,22 +14,18 @@ logger = _logger(__name__)
 class GenreService(SearchMixin, ElasticMixin):
     def __init__(self, elastic: AsyncElasticsearch, index: str = 'genres'):
         """
-        Args:
-            elastic: Соединение с Elasticsearch.
+        :param elastic: Соединение с Elasticsearch.
         """
 
         self.elastic = elastic
         self.index = index
 
     async def get(self, uuid: str, url: str) -> DetailGenre | None:
-        """Получение информации о конкретном жанре.
-
-        Args:
-            uuid: id фильма.
-            url: url запроса для кеша
-
-        Returns:
-            Optional[DetailGenre]: Объект модели DetailGenre | None.
+        """
+        Получение информации о конкретном жанре.
+        :param uuid: id фильма.
+        :param url: url запроса для кеша
+        :return Optional[DetailGenre]: Объект модели DetailGenre | None.
         """
         doc = await self.get_by_id_from_elastic(uuid)
         if doc is None:
@@ -40,13 +36,10 @@ class GenreService(SearchMixin, ElasticMixin):
         return genre
 
     async def get_multi(self, url: str) -> list[DetailGenre] | None:
-        """Получение информации о всех жанрах.
-
-        Args:
-            url: url запроса для кеша
-
-        Returns:
-            Optional[list[DetailGenre]]: Список объектов модели DetailGenre | None.
+        """
+        Получение информации о всех жанрах.
+        :param url: url запроса для кеша
+        :return Optional[list[DetailGenre]]: Список объектов модели DetailGenre | None.
         """
         docs = await self.get_multi_from_elastic()
         if docs is None:
@@ -61,13 +54,10 @@ class GenreService(SearchMixin, ElasticMixin):
 def get_genre_service(
     elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> GenreService:
-    """Провайдер для FilmService.
-
-    Args:
-        elastic: Соединение с Elasticsearch.
-
-        Returns:
-            FilmService: Объект класса FilmService для API.
+    """
+    Провайдер для FilmService.
+    :param elastic: Соединение с Elasticsearch.
+    :return FilmService: Объект класса FilmService для API.
     """
 
     return GenreService(elastic)

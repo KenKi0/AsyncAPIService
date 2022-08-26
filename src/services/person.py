@@ -15,23 +15,19 @@ logger = _logger(__name__)
 class PersonService(SearchMixin, ElasticMixin):
     def __init__(self, elastic: AsyncElasticsearch, index: str = 'persons'):
         """
-        Args:
-            elastic: Соединение с Elasticsearch.
+        :param elastic: Соединение с Elasticsearch.
         """
 
         self.elastic = elastic
         self.index = index
 
     async def get_by_id(self, url: str, person_id: str, index: str = 'persons') -> DetailPerson | None:
-        """Получение и запись информации о персоне.
-
-        Args:
-            url: Ключ для кеша.
-            person_id: id персоны.
-            index: Индекс для Elasticsearch.
-
-        Returns:
-            Optional[DetailPerson]: Объект модели DetailPerson | None.
+        """
+        Получение и запись информации о персоне.
+        :param url: Ключ для кеша.
+        :param person_id: id персоны.
+        :param index: Индекс для Elasticsearch.
+        :return Optional[DetailPerson]: Объект модели DetailPerson | None.
         """
 
         self.index = index
@@ -51,13 +47,9 @@ class PersonService(SearchMixin, ElasticMixin):
     async def get_person_by_search(self, url: str, **kwargs) -> list[DetailPerson] | None:
         """
         Получение и запись списка данных о фильмах.
-
-        Args:
-            url: Ключ для кеша.
-            **kwargs: Параметры запроса.
-
-        Returns:
-            Optional[list[DetailPerson]]: Список объектов модели DetailPerson | None.
+        :param url: Ключ для кеша.
+        :param **kwargs: Параметры запроса.
+        :return Optional[list[DetailPerson]]: Список объектов модели DetailPerson | None.
         """
 
         search = self.get_search(
@@ -86,13 +78,9 @@ class PersonService(SearchMixin, ElasticMixin):
     async def get_film_person_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-
-        Args:
-            url: Ключ для кеша.
-            **kwargs: Параметры запроса.
-
-        Returns:
-            Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
+        :param url: Ключ для кеша.
+        :param **kwargs: Параметры запроса.
+        :return Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
         search = self.get_search(
@@ -113,13 +101,10 @@ class PersonService(SearchMixin, ElasticMixin):
 def get_person_service(
     elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> PersonService:
-    """Провайдер для PersonService.
-
-    Args:
-        elastic: Соединение с Elasticsearch.
-
-        Returns:
-            PersonService: Объект класса PersonService.
+    """
+    Провайдер для PersonService.
+    :param elastic: Соединение с Elasticsearch.
+    :return PersonService: Объект класса PersonService.
     """
 
     return PersonService(elastic)

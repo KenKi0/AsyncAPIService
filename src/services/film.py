@@ -16,8 +16,7 @@ logger = _logger(__name__)
 class FilmService(SearchMixin, ElasticMixin):
     def __init__(self, elastic: AsyncElasticsearch, index: str = 'movies'):
         """
-        Args:
-            elastic: Соединение с Elasticsearch.
+        :param elastic: Соединение с Elasticsearch.
         """
 
         self.elastic = elastic
@@ -25,11 +24,9 @@ class FilmService(SearchMixin, ElasticMixin):
 
     async def get_by_id(self, film_id: str, url: str) -> DetailFilmResponse | None:
         """Получение и запись информации о фильме.
-        Args:
-            film_id: id фильма.
-            url: Ключ для кеша.
-        Returns:
-            Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
+        :param film_id: id фильма.
+        :param url: Ключ для кеша.
+        :return Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
 
         doc = await self.get_by_id_from_elastic(film_id)
@@ -68,11 +65,9 @@ class FilmService(SearchMixin, ElasticMixin):
     async def get_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-        Args:
-            url: Ключ для кеша.
-            **kwargs: Параметры запроса.
-        Returns:
-            Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
+        :param url: Ключ для кеша.
+        :param **kwargs: Параметры запроса.
+        :return Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
         """
 
         search = self.get_search(
@@ -95,13 +90,10 @@ class FilmService(SearchMixin, ElasticMixin):
 def get_film_service(
     elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
-    """Провайдер для FilmService.
-
-    Args:
-        elastic: Соединение с Elasticsearch.
-
-        Returns:
-            FilmService: Объект класса FilmService для API.
+    """
+    Провайдер для FilmService.
+    :param elastic: Соединение с Elasticsearch.
+    :return FilmService: Объект класса FilmService для API.
     """
 
     return FilmService(elastic)

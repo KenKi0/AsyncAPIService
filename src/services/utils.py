@@ -22,17 +22,13 @@ class SearchMixin:
     ) -> Search:
         """
         Получение Search.
-
-        Args:
-            query: Параметр поиска.
-            sort: Параметр сортировки.
-            page_num: Номер страницы.
-            page_size: Размер страницы.
-            _filter: Параметр фильтрации по жанрам.
-            _person: id персоны.
-
-        Returns:
-            Search: Объект Search.
+        :param query: Параметр поиска.
+        :param sort: Параметр сортировки.
+        :param page_num: Номер страницы.
+        :param page_size: Размер страницы.
+        :param _filter: Параметр фильтрации по жанрам.
+        :param _person: id персоны.
+        :return Search: Объект Search.
         """
         start = (page_num - 1) * page_size
         stop = page_size * page_num
@@ -60,12 +56,8 @@ class RedisCacheMixin:
     async def get_from_cache(self, key: str) -> str | bytes | None:
         """
         Получение данных из кеша.
-
-        Args:
-            key: Ключ.
-
-        Returns:
-            str | bytes | None: Данные из кеша.
+        :param key: Ключ.
+        :return str | bytes | None: Данные из кеша.
         """
         data = await self.redis.get(key)
         if not data:
@@ -80,11 +72,9 @@ class RedisCacheMixin:
     ) -> None:
         """
         Запись данных в кеш.
-
-        Args:
-            key: Ключ.
-            data: Данные для записи.
-            ex: Время хранения данных.
+        :param key: Ключ.
+        :param data: Данные для записи.
+        :param ex: Время хранения данных.
         """
         logger.debug('[+] Put data into cached. url:%s', key)
         await self.redis.set(key, data, ex=ex)
@@ -94,12 +84,8 @@ class ElasticMixin:
     async def get_by_id_from_elastic(self, _id: str) -> dict | None:
         """
         Получение данных из Elasticsearch по id.
-
-        Args:
-            _id: id .
-
-        Returns:
-            dict: Ответ elasticsearch в виде dict | None.
+        :param _id: id.
+        :return dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
@@ -115,12 +101,8 @@ class ElasticMixin:
     ) -> dict | None:
         """
         Получение данных из Elasticsearch по id.
-
-        Args:
-            search: Объект класса Search .
-
-        Returns:
-            dict: Ответ elasticsearch в виде dict | None.
+        :param search: Объект класса Search .
+        :return dict: Ответ elasticsearch в виде dict | None.
         """
 
         try:
@@ -134,9 +116,7 @@ class ElasticMixin:
     async def get_multi_from_elastic(self) -> dict | None:
         """
         Получение всех данных индекса из Elasticsearch.
-
-        Returns:
-            dict: Ответ elasticsearch в виде dict | None.
+        :return dict: Ответ elasticsearch в виде dict | None.
         """
         body = {'query': {'match_all': {}}}
         try:
@@ -148,13 +128,10 @@ class ElasticMixin:
 
 
 def create_key(params: str) -> str:
-    """Получение хешированного ключа для Redis.
-
-    Args:
-        params: Данные для хеширования.
-
-    Returns:
-        str: Хешированный ключ для Redis.
+    """
+    Получение хешированного ключа для Redis.
+    :param params: Данные для хеширования.
+    :return str: Хешированный ключ для Redis.
     """
 
     return md5(params.encode()).hexdigest()  # noqa: DUO130
