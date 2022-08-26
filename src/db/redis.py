@@ -1,9 +1,5 @@
-from aioredis import Redis
+import aioredis
 
 from core.config import settings
 
-redis: Redis | None = Redis(host=settings.redis.HOST)
-
-
-async def get_redis() -> Redis:
-    return redis
+redis: aioredis.Redis = aioredis.from_url(settings.redis.url, max_connections=20, decode_responses=True)
