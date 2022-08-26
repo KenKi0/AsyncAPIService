@@ -1,35 +1,33 @@
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from core.logger import logger as _logger
-from db.elastic import get_elastic
+from db.repository import Repository, get_repository
 from models.film import DetailFilmResponse, Film, FilmResponse
 from models.genre import FilmGenre
 from models.person import FilmPerson
-from services.utils import ElasticMixin, SearchMixin
+from services.utils import SearchMixin
 
 logger = _logger(__name__)
 
 
-class FilmService(SearchMixin, ElasticMixin):
-    def __init__(self, elastic: AsyncElasticsearch, index: str = 'movies'):
+class FilmService(SearchMixin):
+    def __init__(self, repo: Repository, index: str = 'movies'):
         """
-        :param elastic: Соединение с Elasticsearch.
+        :param repo:  класс реализущией интерфейс Repository
         """
-
-        self.elastic = elastic
-        self.index = index
+        self.repo = repo
+        self.index = index  # TODO избавиться от self.index
 
     async def get_by_id(self, film_id: str, url: str) -> DetailFilmResponse | None:
-        """Получение и запись информации о фильме.
-        :param film_id: id фильма.
-        :param url: Ключ для кеша.
-        :return Optional[DetailFilmResponse]: Объект модели DetailFilmResponse | None.
         """
-
-        doc = await self.get_by_id_from_elastic(film_id)
+        Получение и запись информации о фильме.
+        :param film_id: id фильма
+        :param url: Ключ для кеша
+        :return: Объект модели DetailFilmResponse
+        """
+        doc = await self.repo.get('movies', film_id)
         if doc is None:
             return
         data = Film(**doc['_source'])
@@ -65,11 +63,10 @@ class FilmService(SearchMixin, ElasticMixin):
     async def get_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша.
-        :param **kwargs: Параметры запроса.
-        :return Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
+        :param url: Ключ для кеша
+        :param kwargs: Параметры запроса
+        :return: Список объектов модели FilmResponse
         """
-
         search = self.get_search(
             kwargs.get('query'),
             kwargs.get('sort'),
@@ -77,7 +74,7 @@ class FilmService(SearchMixin, ElasticMixin):
             kwargs.get('page_size'),
             kwargs.get('_filter'),
         )
-        docs = await self.get_by_search_from_elastic(search)
+        docs = await self.repo.search('movies', search)
         if docs is None:
             return
         data = [Film(**row['_source']) for row in docs['hits']['hits']]
@@ -88,12 +85,11 @@ class FilmService(SearchMixin, ElasticMixin):
 
 @lru_cache()
 def get_film_service(
-    elastic: AsyncElasticsearch = Depends(get_elastic),
+    repo: Repository = Depends(get_repository),
 ) -> FilmService:
     """
     Провайдер для FilmService.
-    :param elastic: Соединение с Elasticsearch.
-    :return FilmService: Объект класса FilmService для API.
+    :param repo: класс реализующий интерфейс Repository
+    :return: Объект класса FilmService для API.
     """
-
-    return FilmService(elastic)
+    return FilmService(repo)

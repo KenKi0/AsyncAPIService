@@ -1,37 +1,32 @@
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from core.logger import logger as _logger
-from db.elastic import get_elastic
+from db.repository import Repository, get_repository
 from models.film import Film, FilmResponse
 from models.person import DetailPerson, Person
-from services.utils import ElasticMixin, SearchMixin
+from services.utils import SearchMixin
 
 logger = _logger(__name__)
 
 
-class PersonService(SearchMixin, ElasticMixin):
-    def __init__(self, elastic: AsyncElasticsearch, index: str = 'persons'):
+class PersonService(SearchMixin):
+    def __init__(self, repo: Repository, index: str = 'persons'):
         """
-        :param elastic: Соединение с Elasticsearch.
+        :param repo: класс реализующий интерфейс Repository
         """
+        self.repo = repo
+        self.index = index  # TODO избавиться от self.index
 
-        self.elastic = elastic
-        self.index = index
-
-    async def get_by_id(self, url: str, person_id: str, index: str = 'persons') -> DetailPerson | None:
+    async def get_by_id(self, url: str, person_id: str) -> DetailPerson | None:
         """
         Получение и запись информации о персоне.
-        :param url: Ключ для кеша.
-        :param person_id: id персоны.
-        :param index: Индекс для Elasticsearch.
-        :return Optional[DetailPerson]: Объект модели DetailPerson | None.
+        :param url: Ключ для кеша
+        :param person_id: id персоны
+        :return: Объект модели DetailPerson
         """
-
-        self.index = index
-        doc = await self.get_by_id_from_elastic(person_id)
+        doc = await self.repo.get('persons', person_id)
         if doc is None:
             return
         data = Person(**doc['_source'])
@@ -47,19 +42,17 @@ class PersonService(SearchMixin, ElasticMixin):
     async def get_person_by_search(self, url: str, **kwargs) -> list[DetailPerson] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша.
-        :param **kwargs: Параметры запроса.
-        :return Optional[list[DetailPerson]]: Список объектов модели DetailPerson | None.
+        :param url: Ключ для кеша
+        :param kwargs: Параметры запроса
+        :return: Список объектов модели DetailPerson
         """
-
         search = self.get_search(
             kwargs.get('query'),
             kwargs.get('sort'),
             kwargs.get('page_num'),
             kwargs.get('page_size'),
         )
-        self.index = kwargs.get('index')
-        docs = await self.get_by_search_from_elastic(search)
+        docs = await self.repo.search('persons', search)
         if docs is None:
             return
         data = [Person(**row['_source']) for row in docs['hits']['hits']]
@@ -78,17 +71,15 @@ class PersonService(SearchMixin, ElasticMixin):
     async def get_film_person_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша.
-        :param **kwargs: Параметры запроса.
-        :return Optional[list[FilmResponse]]: Список объектов модели FilmResponse | None.
+        :param url: Ключ для кеша
+        :param kwargs: Параметры запроса
+        :return: Список объектов модели FilmResponse
         """
-
         search = self.get_search(
-            sort=kwargs.get('sort'),
+            sort='-imdb_rating',
             _person=kwargs.get('_person'),
         )
-        self.index = kwargs.get('index')
-        docs = await self.get_by_search_from_elastic(search)
+        docs = await self.repo.search('movies', search)
         if docs is None:
             return
         data = [Film(**row['_source']) for row in docs['hits']['hits']]
@@ -99,12 +90,11 @@ class PersonService(SearchMixin, ElasticMixin):
 
 @lru_cache()
 def get_person_service(
-    elastic: AsyncElasticsearch = Depends(get_elastic),
+    repo: Repository = Depends(get_repository),
 ) -> PersonService:
     """
     Провайдер для PersonService.
-    :param elastic: Соединение с Elasticsearch.
-    :return PersonService: Объект класса PersonService.
+    :param repo: класс реализующий интерфейс Repository
+    :return: Объект класса PersonService
     """
-
-    return PersonService(elastic)
+    return PersonService(repo)
