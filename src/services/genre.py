@@ -18,11 +18,10 @@ class GenreService(SearchMixin):
         self.repo = repo
         self.index = index  # TODO избавиться от self.index
 
-    async def get(self, uuid: str, url: str) -> DetailGenre | None:
+    async def get(self, uuid: str) -> DetailGenre | None:
         """
         Получение информации о конкретном жанре
         :param uuid: id жанра в БД
-        :param url: Ключ для кеша
         :return: Объект модели DetailGenre
         """
         doc = await self.repo.get('genres', uuid)
@@ -30,13 +29,12 @@ class GenreService(SearchMixin):
             return
         elastic_data = Genre(**doc['_source'])
         genre = DetailGenre(uuid=elastic_data.id, name=elastic_data.name, description=elastic_data.description)
-        logger.debug('[+] Return genre from elastic. url:%s', url)
+        logger.debug('[+] Return genre from elastic. uuid:%s', uuid)
         return genre
 
-    async def get_multi(self, url: str) -> list[DetailGenre] | None:
+    async def get_multi(self) -> list[DetailGenre] | None:
         """
         Получение информации о всех жанрах.
-        :param url: Ключ для кеша
         :return: Список объектов модели DetailGenre
         """
         docs = await self.repo.get_multi('genres')
@@ -44,7 +42,7 @@ class GenreService(SearchMixin):
             return []
         elastic_data = [Genre(**row['_source']) for row in docs['hits']['hits']]
         genres = [DetailGenre(uuid=row.id, name=row.name, description=row.description) for row in elastic_data]
-        logger.debug('[+] Return genres from elastic. url:%s', url)
+        logger.debug('[+] Return genres from elastic.')
         return genres
 
 
