@@ -1,37 +1,30 @@
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from core.logger import logger as _logger
-from db.elastic import get_elastic
+from db.repository import Repository, get_repository
 from models.genre import DetailGenre, Genre
-from services.utils import ElasticMixin, SearchMixin
+from services.utils import SearchMixin
 
 logger = _logger(__name__)
 
 
-class GenreService(SearchMixin, ElasticMixin):
-    def __init__(self, elastic: AsyncElasticsearch, index: str = 'genres'):
+class GenreService(SearchMixin):
+    def __init__(self, repo: Repository):
         """
-        Args:
-            elastic: Соединение с Elasticsearch.
+        :param repo: класс реализующий интерфейс Repository.
         """
-
-        self.elastic = elastic
-        self.index = index
+        self.repo = repo
 
     async def get(self, uuid: str, url: str) -> DetailGenre | None:
-        """Получение информации о конкретном жанре.
-
-        Args:
-            uuid: id фильма.
-            url: url запроса для кеша
-
-        Returns:
-            Optional[DetailGenre]: Объект модели DetailGenre | None.
         """
-        doc = await self.get_by_id_from_elastic(uuid)
+        Получение информации о конкретном жанре
+        :param uuid: id жанра в БД
+        :param url: Ключ для кеша
+        :return: Объект модели DetailGenre
+        """
+        doc = await self.repo.get('genres', uuid)
         if doc is None:
             return
         elastic_data = Genre(**doc['_source'])
@@ -40,15 +33,12 @@ class GenreService(SearchMixin, ElasticMixin):
         return genre
 
     async def get_multi(self, url: str) -> list[DetailGenre] | None:
-        """Получение информации о всех жанрах.
-
-        Args:
-            url: url запроса для кеша
-
-        Returns:
-            Optional[list[DetailGenre]]: Список объектов модели DetailGenre | None.
         """
-        docs = await self.get_multi_from_elastic()
+        Получение информации о всех жанрах.
+        :param url: Ключ для кеша
+        :return: Список объектов модели DetailGenre
+        """
+        docs = await self.repo.get_multi('genres')
         if docs is None:
             return []
         elastic_data = [Genre(**row['_source']) for row in docs['hits']['hits']]
@@ -59,15 +49,11 @@ class GenreService(SearchMixin, ElasticMixin):
 
 @lru_cache()
 def get_genre_service(
-    elastic: AsyncElasticsearch = Depends(get_elastic),
+    repo: Repository = Depends(get_repository),
 ) -> GenreService:
-    """Провайдер для FilmService.
-
-    Args:
-        elastic: Соединение с Elasticsearch.
-
-        Returns:
-            FilmService: Объект класса FilmService для API.
     """
-
-    return GenreService(elastic)
+    Провайдер для GenreService.
+    :param repo: класс реализующий интерфейс Repository
+    :return: Объект класса GenreService для API
+    """
+    return GenreService(repo)
