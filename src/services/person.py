@@ -19,10 +19,9 @@ class PersonService(SearchMixin):
         self.repo = repo
         self.index = index  # TODO избавиться от self.index
 
-    async def get_by_id(self, url: str, person_id: str) -> DetailPerson | None:
+    async def get_by_id(self, person_id: str) -> DetailPerson | None:
         """
         Получение и запись информации о персоне.
-        :param url: Ключ для кеша
         :param person_id: id персоны
         :return: Объект модели DetailPerson
         """
@@ -36,13 +35,12 @@ class PersonService(SearchMixin):
             role=data.role,
             film_ids=data.film_ids,
         )
-        logger.debug('[+] Return person from elastic. url::%s', url)
+        logger.debug('[+] Return person from elastic. id::%s', person)
         return person
 
-    async def get_person_by_search(self, url: str, **kwargs) -> list[DetailPerson] | None:
+    async def get_person_by_search(self, **kwargs) -> list[DetailPerson] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша
         :param kwargs: Параметры запроса
         :return: Список объектов модели DetailPerson
         """
@@ -65,13 +63,12 @@ class PersonService(SearchMixin):
             )
             for row in data
         ]
-        logger.debug('[+] Return persons from elastic. url:%s', url)
+        logger.debug('[+] Return persons from elastic.')
         return persons
 
-    async def get_film_person_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
+    async def get_film_person_by_search(self, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша
         :param kwargs: Параметры запроса
         :return: Список объектов модели FilmResponse
         """
@@ -84,7 +81,7 @@ class PersonService(SearchMixin):
             return
         data = [Film(**row['_source']) for row in docs['hits']['hits']]
         person_films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
-        logger.debug('[+] Return person films from elastic. url:%s', url)
+        logger.debug('[+] Return person films from elastic.')
         return person_films
 
 

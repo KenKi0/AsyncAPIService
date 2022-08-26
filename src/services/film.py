@@ -20,11 +20,10 @@ class FilmService(SearchMixin):
         self.repo = repo
         self.index = index  # TODO избавиться от self.index
 
-    async def get_by_id(self, film_id: str, url: str) -> DetailFilmResponse | None:
+    async def get_by_id(self, film_id: str) -> DetailFilmResponse | None:
         """
         Получение и запись информации о фильме.
         :param film_id: id фильма
-        :param url: Ключ для кеша
         :return: Объект модели DetailFilmResponse
         """
         doc = await self.repo.get('movies', film_id)
@@ -57,13 +56,12 @@ class FilmService(SearchMixin):
             writers=writers_list,
             directors=directors_list,
         )
-        logger.debug('[+] Return film from elastic. url:%s', url)
+        logger.debug('[+] Return film from elastic. id:%s', film_id)
         return film
 
-    async def get_by_search(self, url: str, **kwargs) -> list[FilmResponse] | None:
+    async def get_by_search(self, **kwargs) -> list[FilmResponse] | None:
         """
         Получение и запись списка данных о фильмах.
-        :param url: Ключ для кеша
         :param kwargs: Параметры запроса
         :return: Список объектов модели FilmResponse
         """
@@ -79,7 +77,7 @@ class FilmService(SearchMixin):
             return
         data = [Film(**row['_source']) for row in docs['hits']['hits']]
         films = [FilmResponse(uuid=row.id, title=row.title, imdb_rating=row.imdb_rating) for row in data]
-        logger.debug('[+] Return films from elastic. url:%s', url)
+        logger.debug('[+] Return films from elastic.')
         return films
 
 

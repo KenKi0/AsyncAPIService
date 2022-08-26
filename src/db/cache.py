@@ -5,6 +5,8 @@ from fastapi.responses import ORJSONResponse
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
+from core.config import settings
+
 
 class CacheProtocol(Protocol):
     def get(self, *args, **kwargs) -> Awaitable:
@@ -28,7 +30,7 @@ class CacheMiddleWare:
             response = await call_next(request)
             if response.status_code == 200 and response.headers.get('content-type') == 'application/json':
                 response, json_response = await self.serialize_response(response)
-                await self.client.set(key, json_response)
+                await self.client.set(key, json_response, ex=settings.FILM_CACHE_EXPIRE_IN_SECONDS)
             return response
         return await self.deserialize_response(cached_response)
 
