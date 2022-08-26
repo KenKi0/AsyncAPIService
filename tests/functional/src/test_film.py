@@ -21,15 +21,6 @@ async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted): 
         assert len(body) == len(film_by_id_exepted), 'Проверка количества полей'
         assert body == film_by_id_exepted, 'Проверка соответствия данных'
 
-
-@pytest.mark.asyncio
-async def test_film_by_wrong_id(make_get_request, es_write_data):
-    """Поиска по несуществующему id."""
-
-    await es_write_data(
-        index='movies',
-        data=es_test_data.movies,
-    )
     async with make_get_request(
         handler_url='/api/v1/films/',
         _id='f000-000-000-000-000',
@@ -89,7 +80,11 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
     )
     async with make_get_request(
         handler_url='/api/v1/films/',
-        query_data={'sort': '-imdb_rating', 'page[number]': 2, 'page[size]': 10},
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 2,
+            'page[size]': 10,
+        },
     ) as response:
 
         assert response.status == 200
@@ -99,14 +94,80 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
 
     async with make_get_request(
         handler_url='/api/v1/films/',
-        query_data={'sort': '-imdb_rating', 'page[number]': 0, 'page[size]': 10},
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 0,
+            'page[size]': 10,
+        },
     ) as response:
 
         assert response.status == 422, 'Проверка пагинации с невалидными данными (page[number] < 1).'
 
     async with make_get_request(
         handler_url='/api/v1/films/',
-        query_data={'sort': '-imdb_rating', 'page[number]': 1, 'page[size]': -10},
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 1,
+            'page[size]': -10,
+        },
     ) as response:
 
         assert response.status == 422, 'Проверка пагинации с невалидными данными (page[size] < 1).'
+
+
+@pytest.mark.asyncio
+async def test_filter_films(make_get_request, es_write_data):
+    """Поиск фильмов определенного жанра."""
+
+    await es_write_data(
+        index='movies',
+        data=es_test_data.movies,
+    )
+    async with make_get_request(
+        handler_url='/api/v1/films/',
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 1,
+            'page[size]': 50,
+            'filter[genre]': '120a21cf-9097-479e-904a-13dd7198c1dd',
+        },
+    ) as response:
+        assert response.status == 200
+        body = await response.json()
+        assert len(body) == 30, 'Проверка наличия всех фильмов.'
+
+    async with make_get_request(
+        handler_url='/api/v1/films/',
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 1,
+            'page[size]': 50,
+            'filter[genre]': 'g333',
+        },
+    ) as response:
+        assert response.status == 422, 'Проверка фильтрации с невалидными данными (filter[genre] not is UUID).'
+
+
+@pytest.mark.asyncio
+async def test_search_films(make_get_request, es_write_data):
+    """Проверка поиска фильмов по названию."""
+
+    await es_write_data(
+        index='movies',
+        data=es_test_data.movies,
+    )
+    async with make_get_request(
+        handler_url='/api/v1/films/search/',
+        query_data={'query': 'man'},
+    ) as response:
+        assert response.status == 200
+        body = await response.json()
+        assert len(body) == 50, 'Проверка наличия всех фильмов.'
+
+    async with make_get_request(
+        handler_url='/api/v1/films/search/',
+        query_data={'query': 'jail'},
+    ) as response:
+        assert response.status == 200
+        body = await response.json()
+        assert len(body) == 30, 'Проверка наличия всех фильмов.'
