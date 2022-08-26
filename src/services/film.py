@@ -13,11 +13,12 @@ logger = _logger(__name__)
 
 
 class FilmService(SearchMixin):
-    def __init__(self, repo: Repository):
+    def __init__(self, repo: Repository, index: str = 'movies'):
         """
         :param repo:  класс реализущией интерфейс Repository
         """
         self.repo = repo
+        self.index = index  # TODO избавиться от self.index
 
     async def get_by_id(self, film_id: str, url: str) -> DetailFilmResponse | None:
         """

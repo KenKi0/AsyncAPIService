@@ -11,11 +11,12 @@ logger = _logger(__name__)
 
 
 class GenreService(SearchMixin):
-    def __init__(self, repo: Repository):
+    def __init__(self, repo: Repository, index: str = 'genres'):
         """
         :param repo: класс реализующий интерфейс Repository.
         """
         self.repo = repo
+        self.index = index  # TODO избавиться от self.index
 
     async def get(self, uuid: str, url: str) -> DetailGenre | None:
         """
