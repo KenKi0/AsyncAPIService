@@ -81,13 +81,22 @@ def redis_write_data(redis_client: Redis):
 @pytest_asyncio.fixture
 def make_get_request(aiohttp_client: aiohttp.ClientSession):
     @asynccontextmanager
-    async def inner(handler_url: str, query_data: dict | None = None, _id: str | None = None):
+    async def inner(
+        handler_url: str,
+        query_data: dict | None = None,
+        _id: str | None = None,
+        _person: str | None = None,
+    ):
         if query_data:
             url = test_settings.service_url + handler_url
             async with aiohttp_client.get(url, params=query_data) as response:
                 yield response
         if _id:
             url = ''.join([test_settings.service_url, handler_url, _id])
+            async with aiohttp_client.get(url) as response:
+                yield response
+        if _person:
+            url = ''.join([test_settings.service_url, handler_url])
             async with aiohttp_client.get(url) as response:
                 yield response
 
