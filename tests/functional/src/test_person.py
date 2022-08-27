@@ -11,19 +11,18 @@ async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepte
         index='persons',
         data=es_test_data.persons,
     )
+    person_id = 'p777'
     async with make_get_request(
-        handler_url='/api/v1/persons/',
-        _id='p777',
+        handler_url=f'/api/v1/persons/{person_id}',
     ) as response:
 
         assert response.status == 200
         body = await response.json()
         assert len(body) == len(person_by_id_exepted), 'Проверка количества полей.'
         assert body == person_by_id_exepted, 'Проверка соответствия данных.'
-
+    wrong_person_id = 'p000-000-000-000-000'
     async with make_get_request(
-        handler_url='/api/v1/persons/',
-        _id='p000-000-000-000-000',
+        handler_url=f'/api/v1/persons/{wrong_person_id}',
     ) as response:
 
         assert response.status == 404, 'Проверка поиска по несуществующему id.'
@@ -65,7 +64,6 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
     person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
-        _person=person_id,
     ) as response:
 
         assert response.status == 200
@@ -75,7 +73,6 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
     person_id = 'e039eedf-4daf-452a-bf92-a0085c68e156'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
-        _person=person_id,
     ) as response:
 
         assert response.status == 200
@@ -90,7 +87,6 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
     wrong_person_id = 'p000-000-000-000-000'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{wrong_person_id}/film',
-        _person=wrong_person_id,
     ) as response:
 
         assert response.status == 404, 'Проверка поиска по несуществующему id.'

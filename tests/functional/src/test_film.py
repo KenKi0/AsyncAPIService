@@ -11,9 +11,9 @@ async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted): 
         index='movies',
         data=es_test_data.movies,
     )
+    film_id = es_test_data.movies[0].get('id')
     async with make_get_request(
-        handler_url='/api/v1/films/',
-        _id=es_test_data.movies[0].get('id'),
+        handler_url=f'/api/v1/films/{film_id}',
     ) as response:
 
         assert response.status == 200
@@ -21,9 +21,9 @@ async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted): 
         assert len(body) == len(film_by_id_exepted), 'Проверка количества полей'
         assert body == film_by_id_exepted, 'Проверка соответствия данных'
 
+    wrong_film_id = 'f000-000-000-000-000'
     async with make_get_request(
-        handler_url='/api/v1/films/',
-        _id='f000-000-000-000-000',
+        handler_url=f'/api/v1/films/{wrong_film_id}',
     ) as response:
 
         assert response.status == 404, 'Проверка поиска по несуществующему id.'
