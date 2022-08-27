@@ -73,9 +73,11 @@ def es_write_data(es_client: AsyncElasticsearch):
 
 
 @pytest_asyncio.fixture
-def redis_write_data(redis_client: Redis):
-    async def inner(data: list[dict]):
-        pass
+def es_drop_data(es_client: AsyncElasticsearch):
+    async def inner(index: str):
+        await es_client.indices.delete(index=index, ignore=[400, 404])
+
+    return inner
 
 
 @pytest_asyncio.fixture
