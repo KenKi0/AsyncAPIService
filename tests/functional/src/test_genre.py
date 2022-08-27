@@ -1,10 +1,30 @@
 import pytest
 from testdata import index_fillings as es_test_data
-from testdata.genres import genre_by_id_exepted, genre_full_exepted  # noqa: F401 #TODO
+
+
+@pytest.fixture
+def genre_by_id_exepted():
+    return {
+        'uuid': es_test_data.genres[0].get('id'),
+        'name': es_test_data.genres[0].get('name'),
+        'description': es_test_data.genres[0].get('description'),
+    }
+
+
+@pytest.fixture
+def genre_full_exepted():
+    return [
+        {
+            'uuid': genre.get('id'),
+            'name': genre.get('name'),
+            'description': genre.get('description'),
+        }
+        for genre in es_test_data.genres
+    ]
 
 
 @pytest.mark.asyncio
-async def test_genre_by_id(make_get_request, es_write_data, genre_by_id_exepted):  # noqa: F811
+async def test_genre_by_id(make_get_request, es_write_data, genre_by_id_exepted):
     """Поиск по id."""
 
     await es_write_data(
@@ -30,7 +50,7 @@ async def test_genre_by_id(make_get_request, es_write_data, genre_by_id_exepted)
 
 
 @pytest.mark.asyncio
-async def test_full_films(make_get_request, es_write_data, genre_full_exepted):  # noqa: F811
+async def test_full_films(make_get_request, es_write_data, genre_full_exepted):
     """Поиск всех жанров."""
 
     await es_write_data(

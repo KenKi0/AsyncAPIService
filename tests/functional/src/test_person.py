@@ -1,10 +1,31 @@
 import pytest
 from testdata import index_fillings as es_test_data
-from testdata.persons import person_by_id_exepted, person_films_exepted  # noqa: F401
+
+
+@pytest.fixture
+def person_by_id_exepted():
+    return {
+        'uuid': 'p777',
+        'full_name': 'Joe',
+        'role': ['actor', 'director'],
+        'film_ids': ['f000', 'f111', 'f222'],
+    }
+
+
+@pytest.fixture
+def person_films_exepted():
+    return [
+        {
+            'uuid': film.get('id'),
+            'title': film.get('title'),
+            'imdb_rating': film.get('imdb_rating'),
+        }
+        for film in es_test_data.movies
+    ][0:20]
 
 
 @pytest.mark.asyncio
-async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepted):  # noqa: F811
+async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepted):
     """Поиск по id."""
 
     await es_write_data(
@@ -54,7 +75,7 @@ async def test_search_person(make_get_request, es_write_data):
 
 
 @pytest.mark.asyncio
-async def test_person_films_by_id(make_get_request, es_write_data, person_films_exepted):  # noqa: F811
+async def test_person_films_by_id(make_get_request, es_write_data, person_films_exepted):
     """Поиск фильмов по id персоны."""
 
     await es_write_data(
