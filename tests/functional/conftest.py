@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 import aiohttp
 import orjson
@@ -6,7 +7,6 @@ import pytest
 import pytest_asyncio
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-
 from settings import test_settings
 
 
@@ -73,10 +73,31 @@ def es_write_data(es_client: AsyncElasticsearch):
 
 
 @pytest_asyncio.fixture
+def redis_write_data(redis_client: Redis):
+    async def inner(data: list[dict]):
+        pass
+
+
+@pytest_asyncio.fixture
 def make_get_request(aiohttp_client: aiohttp.ClientSession):
-    async def inner(handler_url: str, query_data: dict):
-        url = test_settings.service_url + handler_url
-        async with aiohttp_client.get(url, params=query_data) as response:
-            yield response
+    @asynccontextmanager
+    async def inner(
+        handler_url: str,
+        query_data: dict | None = None,
+        _id: str | None = None,
+        _person: str | None = None,
+    ):
+        if query_data:
+            url = test_settings.service_url + handler_url
+            async with aiohttp_client.get(url, params=query_data) as response:
+                yield response
+        if _id:
+            url = ''.join([test_settings.service_url, handler_url, _id])
+            async with aiohttp_client.get(url) as response:
+                yield response
+        if _person:
+            url = ''.join([test_settings.service_url, handler_url])
+            async with aiohttp_client.get(url) as response:
+                yield response
 
     return inner

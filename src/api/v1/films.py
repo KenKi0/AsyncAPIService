@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from api.v1.utils import SortEnum
 from core.logger import logger as _logger
 from models.film import DetailFilmResponse, FilmResponse
 from services.film import FilmService, get_film_service
@@ -20,7 +21,7 @@ router = APIRouter()
     response_description='Список из названий и рейтингов кинопроизведений',
 )
 async def films(
-    sort: str,
+    sort: SortEnum,
     service: FilmService = Depends(get_film_service),
     page_num: int = Query(default=1, alias='page[number]', ge=1),
     page_size: int = Query(default=50, alias='page[size]', ge=1),
