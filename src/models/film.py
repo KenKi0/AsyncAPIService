@@ -2,8 +2,8 @@ from typing import Optional
 
 from pydantic.fields import Field
 
-from models.genre import Genre
-from models.person import Person
+from models.genre import GenreResponse
+from models.person import PersonResponse
 from models.utils import DefaultModel
 
 
@@ -22,7 +22,7 @@ class ESFilmGenre(DefaultModel):
 class ESFilm(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
-    uuid: str = Field(..., alias='id')  # noqa: VNE003
+    uuid: str = Field(..., alias='id')
     title: str
     description: Optional[str]
     imdb_rating: float
@@ -46,7 +46,7 @@ class DetailFilmResponse(FilmResponse):
     """Полная информация по фильму."""
 
     description: Optional[str] = ''
-    genre: Optional[list[Genre]]
-    actors: Optional[list[Person]]
-    writers: Optional[list[Person]] = []
-    directors: Optional[list[Person]]
+    genre: Optional[list[GenreResponse]]
+    actors: Optional[list[PersonResponse]]
+    writers: Optional[list[PersonResponse]] = []
+    directors: Optional[list[PersonResponse]]

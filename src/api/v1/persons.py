@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from core.logger import logger as _logger
 from models.film import FilmResponse
-from models.person import DetailPerson
+from models.person import DetailPersonResponse
 from services.person import PersonService, get_person_service
 from services.response_messages import PersonMessages as Msg
 
@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get(
     path='/search',
-    response_model=list[DetailPerson],
+    response_model=list[DetailPersonResponse],
     summary='Поиск персон',
     description='Полнотекстовый поиск по персонам',
     response_description='Список персон с их именем, ролями и фильмографией',
@@ -24,7 +24,7 @@ async def search_person(
     service: PersonService = Depends(get_person_service),
     page_num: int = Query(default=1, alias='page[number]', ge=1),
     page_size: int = Query(default=50, alias='page[size]', ge=1),
-) -> list[DetailPerson] | None:
+) -> list[DetailPersonResponse] | None:
     person = await service.get_person_by_search(
         query=query,
         page_num=page_num,
@@ -38,7 +38,7 @@ async def search_person(
 
 @router.get(
     path='/{person_id}',
-    response_model=DetailPerson,
+    response_model=DetailPersonResponse,
     summary='Поиск персоны по ID',
     description='Поиск персоны по ID',
     response_description='Имя, роль и фильмография персоны',
@@ -46,7 +46,7 @@ async def search_person(
 async def person_details(
     person_id: str,
     service: PersonService = Depends(get_person_service),
-) -> DetailPerson | None:
+) -> DetailPersonResponse | None:
     person = await service.get_by_id(person_id=person_id)
     if not person:
         logger.debug('[-] %s. id: %s', Msg.not_found.value, person_id)

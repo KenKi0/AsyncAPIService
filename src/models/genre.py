@@ -8,19 +8,19 @@ from models.utils import DefaultModel
 class ESGenre(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
-    uuid: str = Field(..., alias='id')  # noqa: VNE003
+    uuid: str = Field(..., alias='id')
     name: str
     description: Optional[str]
 
 
-class Genre(DefaultModel):
+class GenreResponse(DefaultModel):
     """Информация о жанре."""
 
     uuid: str
     name: str
 
 
-class DetailGenre(Genre):
+class DetailGenreResponse(GenreResponse):
     """Полная информация по жанрам."""
 
     description: Optional[str]

@@ -8,20 +8,20 @@ from models.utils import DefaultModel
 class ESPerson(DefaultModel):
     """Модель описывающая document в Elasticserch."""
 
-    uuid: str = Field(..., alias='id')  # noqa: VNE003
+    uuid: str = Field(..., alias='id')
     full_name: str
     role: Optional[list[str]]
     film_ids: Optional[list[str]]
 
 
-class Person(DefaultModel):
+class PersonResponse(DefaultModel):
     """Информация о персонах."""
 
     uuid: str
     full_name: str
 
 
-class DetailPerson(Person):
+class DetailPersonResponse(PersonResponse):
     """Полная информация по персонам."""
 
     role: Optional[list[str]]

@@ -39,8 +39,7 @@ class PersonService:
         """
         start = (kwargs['page_num'] - 1) * kwargs['page_size']
         stop = kwargs['page_size'] * kwargs['page_num']
-        search = Search(index='persons').query('match_all')[start:stop]
-        search = search.query('multi_match', query=kwargs['query'], fuzziness='auto')
+        search = Search(index='persons').query('multi_match', query=kwargs['query'], fuzziness='auto')[start:stop]
         docs = await self.repo.search('persons', search)
         if docs is None:
             return
@@ -54,14 +53,17 @@ class PersonService:
         :param kwargs: Параметры запроса
         :return: Список объектов модели FilmResponse
         """
-        search = Search(index='movies').query('match_all').sort('-imdb_rating')
-        search = search.query(
-            'bool',
-            should=[
-                Q('nested', path='actors', query=Q('match', actors__id=kwargs['_person'])),
-                Q('nested', path='writers', query=Q('match', writers__id=kwargs['_person'])),
-                Q('nested', path='director', query=Q('match', director__id=kwargs['_person'])),
-            ],
+        search = (
+            Search(index='movies')
+            .sort('-imdb_rating')
+            .query(
+                'bool',
+                should=[
+                    Q('nested', path='actors', query=Q('match', actors__id=kwargs['_person'])),
+                    Q('nested', path='writers', query=Q('match', writers__id=kwargs['_person'])),
+                    Q('nested', path='director', query=Q('match', director__id=kwargs['_person'])),
+                ],
+            )
         )
         docs = await self.repo.search('movies', search)
         if docs is None:
