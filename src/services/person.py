@@ -63,7 +63,7 @@ class PersonService:
                     Q('nested', path='writers', query=Q('match', writers__id=kwargs['_person'])),
                     Q('nested', path='director', query=Q('match', director__id=kwargs['_person'])),
                 ],
-            )
+            )[:50]
         )
         docs = await self.repo.search('movies', search)
         if docs is None:
