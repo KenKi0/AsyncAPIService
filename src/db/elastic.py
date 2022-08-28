@@ -35,7 +35,10 @@ class ElasticRepository:
         :return: Ответ elasticsearch в виде dict
         """
         if search is None:
-            body = {'query': {'match_all': {}}}
+            body = {
+                'query': {'match_all': {}},
+                'size': 50,
+            }
         else:
             body = search.to_dict()
         try:
