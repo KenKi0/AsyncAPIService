@@ -51,7 +51,7 @@ async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepte
 
 @pytest.mark.asyncio
 async def test_search_person(make_get_request, es_write_data):
-    """Проверка поиска персон по имени."""
+    """Поиск персон по имени."""
 
     await es_write_data(
         index='persons',
