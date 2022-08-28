@@ -26,7 +26,7 @@ class ESFilm(DefaultModel):
     title: str
     description: Optional[str]
     imdb_rating: float
-    director: Optional[list[ESFilmPerson]]
+    directors: Optional[list[ESFilmPerson]] = Field(..., alias='director')
     actors_names: Optional[list[str]]
     writers_names: Optional[list[str]]
     actors: Optional[list[ESFilmPerson]]
@@ -46,7 +46,7 @@ class DetailFilmResponse(FilmResponse):
     """Полная информация по фильму."""
 
     description: Optional[str] = ''
-    genre: Optional[list[GenreResponse]]
-    actors: Optional[list[PersonResponse]]
+    genre: Optional[list[GenreResponse]] = []
+    actors: Optional[list[PersonResponse]] = []
     writers: Optional[list[PersonResponse]] = []
-    directors: Optional[list[PersonResponse]]
+    directors: Optional[list[PersonResponse]] = []
