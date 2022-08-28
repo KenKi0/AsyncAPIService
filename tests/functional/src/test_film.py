@@ -51,7 +51,7 @@ def film_pagination_exepted():
 
 @pytest.mark.asyncio
 async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted):
-    """Поиска по id."""
+    """Поиск по id."""
 
     await es_write_data(
         index='movies',
@@ -201,7 +201,7 @@ async def test_filter_films(make_get_request, es_write_data):
 
 @pytest.mark.asyncio
 async def test_search_films(make_get_request, es_write_data):
-    """Проверка поиска фильмов по названию."""
+    """Поиск фильмов по названию."""
 
     await es_write_data(
         index='movies',
