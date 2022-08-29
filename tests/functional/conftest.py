@@ -23,10 +23,6 @@ def event_loop():
 async def es_client():
     es = AsyncElasticsearch(hosts=test_settings.es_host)
 
-    # for index in test_settings.es_index:
-    #     if not await es.indices.exists(index=index):
-    #         await es.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
-
     yield es
 
     await es.close()
