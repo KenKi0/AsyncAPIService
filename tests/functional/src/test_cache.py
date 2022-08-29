@@ -78,12 +78,13 @@ async def test_cache(
         assert response.status == 200
 
     # Удаление данных из Elasticsearch
+
     await es_drop_data(index='movies')
     await es_drop_data(index='genres')
     await es_drop_data(index='persons')
 
     # Проверка удаления данных из Elasticsearch
-    genre_id = es_test_data.genres[1].get('id')
+    genre_id = es_test_data.genres[2].get('id')
     async with make_get_request(
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
@@ -91,11 +92,16 @@ async def test_cache(
 
     async with make_get_request(
         handler_url='/api/v1/films/',
-        query_data={'sort': 'imdb_rating'},
+        query_data={
+            'sort': '-imdb_rating',
+            'page[number]': 1,
+            'page[size]': 50,
+            'filter[genre]': 'fb58fd7f-7afd-447f-b833-e51e45e2a778',
+        },
     ) as response:
         assert response.status == 404
 
-    person_id = 'b5d2b63a-ed1f-4e46-8320-cf52a32be358'
+    person_id = 'efdd1787-8871-4aa9-b1d7-f68e55b913ed'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:

@@ -37,7 +37,7 @@ class ElasticRepository:
         if search is None:
             body = {
                 'query': {'match_all': {}},
-                'size': 50,
+                'size': 10_000,
             }
         else:
             body = search.to_dict()
