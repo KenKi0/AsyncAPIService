@@ -51,7 +51,7 @@ def film_pagination_exepted():
 
 @pytest.mark.asyncio
 async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted):
-    """Поиска по id."""
+    """Поиск по id."""
 
     await es_write_data(
         index='movies',
@@ -124,19 +124,24 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
         index='movies',
         data=es_test_data.movies,
     )
+    page_num = 2
+    page_size = 10
     async with make_get_request(
         handler_url='/api/v1/films/',
         query_data={
             'sort': '-imdb_rating',
-            'page[number]': 2,
-            'page[size]': 10,
+            'page[number]': page_num,
+            'page[size]': page_size,
         },
     ) as response:
 
+        start = (page_num - 1) * page_size
+        stop = page_size * page_num
+
         assert response.status == 200
         body = await response.json()
-        assert len(body) == len(film_pagination_exepted[10:20]), 'Проверка наличия всех фильмов.'
-        assert body == film_pagination_exepted[10:20], 'Проверка соответствия данных.'
+        assert len(body) == page_size, 'Проверка наличия всех фильмов.'
+        assert body == film_pagination_exepted[start:stop], 'Проверка соответствия данных.'
 
     async with make_get_request(
         handler_url='/api/v1/films/',
@@ -196,7 +201,7 @@ async def test_filter_films(make_get_request, es_write_data):
 
 @pytest.mark.asyncio
 async def test_search_films(make_get_request, es_write_data):
-    """Проверка поиска фильмов по названию."""
+    """Поиск фильмов по названию."""
 
     await es_write_data(
         index='movies',
