@@ -87,19 +87,19 @@ async def test_cache(
     async with make_get_request(
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
-        assert response.status == 500
+        assert response.status == 404
 
     async with make_get_request(
         handler_url='/api/v1/films/',
         query_data={'sort': 'imdb_rating'},
     ) as response:
-        assert response.status == 500
+        assert response.status == 404
 
     person_id = 'b5d2b63a-ed1f-4e46-8320-cf52a32be358'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
-        assert response.status == 500
+        assert response.status == 404
 
     # Проверка наличия данных в кеше
     genre_id = es_test_data.genres[0].get('id')
