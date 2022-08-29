@@ -23,10 +23,6 @@ def event_loop():
 async def es_client():
     es = AsyncElasticsearch(hosts=test_settings.es_host)
 
-    for index in test_settings.es_index:
-        if not await es.indices.exists(index=index):
-            await es.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
-
     yield es
 
     await es.close()
@@ -45,6 +41,13 @@ async def redis_client():
 async def aiohttp_client():
     async with aiohttp.ClientSession() as client:
         yield client
+
+
+@pytest_asyncio.fixture(scope='module', autouse=True)
+async def create_index(es_client: AsyncElasticsearch):
+    for index in test_settings.es_index:
+        if not await es_client.indices.exists(index=index):
+            await es_client.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
 
 
 def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
@@ -73,9 +76,11 @@ def es_write_data(es_client: AsyncElasticsearch):
 
 
 @pytest_asyncio.fixture
-def redis_write_data(redis_client: Redis):
-    async def inner(data: list[dict]):
-        pass
+def es_drop_data(es_client: AsyncElasticsearch):
+    async def inner(index: str):
+        await es_client.indices.delete(index=index, ignore=[400, 404])
+
+    return inner
 
 
 @pytest_asyncio.fixture
