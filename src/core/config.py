@@ -40,6 +40,7 @@ class ElasticSettings(BaseConfig):
 
 class ProjectSettings(BaseConfig):
 
+    SECRET: str = '245585dbb5cbe2f151742298d61d364880575bff0bdcbf4ae383f0180e7e47dd'
     PROJECT_NAME: str = 'movies'
     BASE_DIR = Path(__file__).parent.parent
     FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
