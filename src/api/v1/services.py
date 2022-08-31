@@ -10,5 +10,8 @@ auth_handler = auth.AuthHandler()
 
 
 @router.post('/flush-cache')
-def flush_cache(_user: dict = Depends(auth_handler.auth_wrapper), cache: CacheProtocol = Depends(get_cache_instance)):
+async def flush_cache(
+    _user: dict = Depends(auth_handler.auth_wrapper),
+    cache: CacheProtocol = Depends(get_cache_instance),
+):
     await cache.flushall()
