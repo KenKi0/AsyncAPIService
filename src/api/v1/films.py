@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.v1.utils import SortEnum, pagination
+from api.v1.utils import PaginatedParams, SortEnum
 from core.logger import logger as _logger
 from models.film import DetailFilmResponse, FilmResponse
 from services.film import FilmService, get_film_service
@@ -23,14 +23,13 @@ router = APIRouter()
 async def films(
     sort: SortEnum,
     service: FilmService = Depends(get_film_service),
-    page_num: int = pagination.PAGE_NUM,
-    page_size: int = pagination.PAGE_SIZE,
+    paginate: PaginatedParams = Depends(),
     _filter: UUID | None = Query(default=None, alias='filter[genre]'),
 ) -> list[FilmResponse] | None:
     films = await service.get_by_search(
         sort=sort,
-        page_size=page_size,
-        page_num=page_num,
+        page_size=paginate.size,
+        page_num=paginate.num,
         _filter=_filter,
     )
     if not films:
@@ -49,13 +48,12 @@ async def films(
 async def search_film(
     query: str,
     service: FilmService = Depends(get_film_service),
-    page_num: int = pagination.PAGE_NUM,
-    page_size: int = pagination.PAGE_SIZE,
+    paginate: PaginatedParams = Depends(),
 ) -> list[FilmResponse] | None:
     films = await service.get_by_search(
         query=query,
-        page_num=page_num,
-        page_size=page_size,
+        page_num=paginate.num,
+        page_size=paginate.size,
     )
     if not films:
         logger.debug('[-] %s. query: %s', Msg.not_found.value, query)

@@ -1,7 +1,7 @@
+import dataclasses
 from enum import Enum
 
 from fastapi import Query
-from pydantic import BaseConfig
 
 
 class SortEnum(str, Enum):
@@ -9,9 +9,15 @@ class SortEnum(str, Enum):
     asc_rating = 'imdb_rating'
 
 
-class PaginatedParams(BaseConfig):
-    PAGE_NUM: int = Query(default=1, alias='page[number]', ge=1)
-    PAGE_SIZE: int = Query(default=50, alias='page[size]', ge=1)
+@dataclasses.dataclass
+class PaginatedParams:
+    num: int = 1
+    size: int = 50
 
-
-pagination = PaginatedParams()
+    def __init__(
+        self,
+        num: int = Query(default=1, alias='page[number]', ge=1),
+        size: int = Query(default=50, alias='page[size]', ge=1),
+    ):
+        self.num = num
+        self.size = size
