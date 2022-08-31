@@ -6,6 +6,7 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from core.config import settings
+from db.redis import redis
 
 
 class CacheProtocol(Protocol):
@@ -13,6 +14,9 @@ class CacheProtocol(Protocol):
         ...
 
     def set(self, *args, **kwargs) -> Awaitable:
+        ...
+
+    def flushall(self, *args, **kwargs) -> Awaitable:
         ...
 
 
@@ -62,3 +66,7 @@ class CacheMiddleWare:
             headers=deserialized_data['headers'],
             media_type=deserialized_data['media_type'],
         )
+
+
+async def get_cache_instance() -> CacheProtocol:
+    return redis
