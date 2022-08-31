@@ -43,6 +43,8 @@ async def test_cache(
     es_write_data,
     es_drop_data,
     genre_cache_exepted,
+    film_cache_exepted,
+    person_cache_exepted,
 ):
     """Поиск в кеше."""
 
@@ -124,9 +126,15 @@ async def test_cache(
         query_data={'sort': '-imdb_rating'},
     ) as response:
         assert response.status == http.HTTPStatus.OK
+        body = await response.json()
+        assert len(body) == len(film_cache_exepted), 'Проверка количества полей.'
+        assert body == film_cache_exepted, 'Проверка соответствия данных.'
 
     person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
         assert response.status == http.HTTPStatus.OK
+        body = await response.json()
+        assert len(body) == len(person_cache_exepted), 'Проверка количества полей.'
+        assert body == person_cache_exepted, 'Проверка соответствия данных.'
