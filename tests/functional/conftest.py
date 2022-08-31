@@ -48,6 +48,10 @@ async def create_index(es_client: AsyncElasticsearch):
     for index in test_settings.es_index:
         if not await es_client.indices.exists(index=index):
             await es_client.indices.create(index=index, body=test_settings.es_index_mapping.get(index))
+    yield
+    for index in test_settings.es_index:
+        if await es_client.indices.exists(index=index):
+            await es_client.indices.delete(index=index, ignore=[400, 404])
 
 
 def get_es_bulk_query(es_data: list[dict], index: str, id_field: str):
@@ -89,14 +93,41 @@ def make_get_request(aiohttp_client: aiohttp.ClientSession):
     async def inner(
         handler_url: str,
         query_data: dict | None = None,
+        headers: dict | None = None,
     ):
+        url = ''.join([test_settings.service_url, handler_url])
+
         if query_data:
-            url = test_settings.service_url + handler_url
             async with aiohttp_client.get(url, params=query_data) as response:
                 yield response
+        elif headers:
+            async with aiohttp_client.get(url, headers=headers) as response:
+                yield response
         else:
-            url = ''.join([test_settings.service_url, handler_url])
             async with aiohttp_client.get(url) as response:
+                yield response
+
+    return inner
+
+
+@pytest_asyncio.fixture
+def make_post_request(aiohttp_client: aiohttp.ClientSession):
+    @asynccontextmanager
+    async def inner(
+        handler_url: str,
+        query_data: dict | None = None,
+        headers: dict | None = None,
+    ):
+        url = ''.join([test_settings.service_url, handler_url])
+
+        if query_data:
+            async with aiohttp_client.post(url, params=query_data) as response:
+                yield response
+        elif headers:
+            async with aiohttp_client.post(url, headers=headers) as response:
+                yield response
+        else:
+            async with aiohttp_client.post(url) as response:
                 yield response
 
     return inner

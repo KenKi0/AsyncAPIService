@@ -1,6 +1,10 @@
+import datetime
 import http
 
+import jwt
 import pytest
+
+from settings import test_settings
 from testdata import index_fillings as es_test_data
 
 
@@ -19,6 +23,7 @@ def film_cache_exepted():
 @pytest.mark.asyncio
 async def test_cache(
     make_get_request,
+    make_post_request,
     es_write_data,
     es_drop_data,
     film_cache_exepted,
@@ -63,10 +68,15 @@ async def test_cache(
         assert len(body) == len(film_cache_exepted), 'Проверка количества полей.'
         assert body == film_cache_exepted, 'Проверка соответствия данных.'
 
-    # TODO
     # Удфление данных из кеша
-    async with make_get_request(
+    token = jwt.encode(
+        {'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=10), 'iat': datetime.datetime.utcnow()},
+        test_settings.SECRET,
+        algorithm='HS256',
+    )
+    async with make_post_request(
         handler_url='/api/v1/services/flush-cache',
+        headers={'Authorization': f'Bearer {token}'},
     ) as response:
         assert response.status == http.HTTPStatus.OK
 
