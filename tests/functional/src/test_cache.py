@@ -75,7 +75,7 @@ async def test_cache(
     ) as response:
         assert response.status == http.HTTPStatus.OK
 
-    person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
+    person_id = 'e039eedf-4daf-452a-bf92-a0085c68e156'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
@@ -130,7 +130,7 @@ async def test_cache(
         assert len(body) == len(film_cache_exepted), 'Проверка количества полей.'
         assert body == film_cache_exepted, 'Проверка соответствия данных.'
 
-    person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
+    person_id = 'e039eedf-4daf-452a-bf92-a0085c68e156'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:

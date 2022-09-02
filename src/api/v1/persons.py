@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.v1.utils import pagination
+from api.v1.utils import PaginatedParams
 from core.logger import logger as _logger
 from models.film import FilmResponse
 from models.person import DetailPersonResponse
@@ -23,13 +23,12 @@ router = APIRouter()
 async def search_person(
     query: str,
     service: PersonService = Depends(get_person_service),
-    page_num: int = pagination.PAGE_NUM,
-    page_size: int = pagination.PAGE_SIZE,
+    paginate: PaginatedParams = Depends(),
 ) -> list[DetailPersonResponse] | None:
     person = await service.get_person_by_search(
         query=query,
-        page_num=page_num,
-        page_size=page_size,
+        page_num=paginate.num,
+        page_size=paginate.size,
     )
     if not person:
         logger.debug('[-] %s. query: %s', Msg.not_found.value, query)
