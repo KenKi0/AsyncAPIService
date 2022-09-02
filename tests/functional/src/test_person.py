@@ -1,3 +1,5 @@
+import http
+
 import pytest
 from testdata import index_fillings as es_test_data
 
@@ -37,7 +39,7 @@ async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepte
         handler_url=f'/api/v1/persons/{person_id}',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(person_by_id_exepted), 'Проверка количества полей.'
         assert body == person_by_id_exepted, 'Проверка соответствия данных.'
@@ -46,7 +48,7 @@ async def test_person_by_id(make_get_request, es_write_data, person_by_id_exepte
         handler_url=f'/api/v1/persons/{wrong_person_id}',
     ) as response:
 
-        assert response.status == 404, 'Проверка поиска по несуществующему id.'
+        assert response.status == http.HTTPStatus.NOT_FOUND, 'Проверка поиска по несуществующему id.'
 
 
 @pytest.mark.asyncio
@@ -61,7 +63,7 @@ async def test_search_person(make_get_request, es_write_data):
         handler_url='/api/v1/persons/search/',
         query_data={'query': 'bob'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 2, 'Проверка наличия всех персон (Bob, Boby).'
 
@@ -69,7 +71,7 @@ async def test_search_person(make_get_request, es_write_data):
         handler_url='/api/v1/persons/search/',
         query_data={'query': 'anny'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 1, 'Проверка наличия всех персон (Ann).'
 
@@ -87,7 +89,7 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 50, 'Проверка количества полей (Актер во всех фильмах).'
 
@@ -96,7 +98,7 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 20, 'Проверка количества полей (Сценарист в 20 фильмах).'
 
@@ -110,4 +112,4 @@ async def test_person_films_by_id(make_get_request, es_write_data, person_films_
         handler_url=f'/api/v1/persons/{wrong_person_id}/film',
     ) as response:
 
-        assert response.status == 404, 'Проверка поиска по несуществующему id.'
+        assert response.status == http.HTTPStatus.NOT_FOUND, 'Проверка поиска по несуществующему id.'

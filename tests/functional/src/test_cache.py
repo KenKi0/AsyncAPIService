@@ -1,3 +1,5 @@
+import http
+
 import pytest
 from testdata import index_fillings as es_test_data
 
@@ -41,6 +43,8 @@ async def test_cache(
     es_write_data,
     es_drop_data,
     genre_cache_exepted,
+    film_cache_exepted,
+    person_cache_exepted,
 ):
     """Поиск в кеше."""
 
@@ -63,19 +67,19 @@ async def test_cache(
     async with make_get_request(
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
 
     async with make_get_request(
         handler_url='/api/v1/films/',
         query_data={'sort': '-imdb_rating'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
 
     person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
 
     # Удаление данных из Elasticsearch
 
@@ -88,7 +92,7 @@ async def test_cache(
     async with make_get_request(
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
-        assert response.status == 404
+        assert response.status == http.HTTPStatus.NOT_FOUND
 
     async with make_get_request(
         handler_url='/api/v1/films/',
@@ -99,20 +103,20 @@ async def test_cache(
             'filter[genre]': 'fb58fd7f-7afd-447f-b833-e51e45e2a778',
         },
     ) as response:
-        assert response.status == 404
+        assert response.status == http.HTTPStatus.NOT_FOUND
 
     person_id = 'efdd1787-8871-4aa9-b1d7-f68e55b913ed'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
-        assert response.status == 404
+        assert response.status == http.HTTPStatus.NOT_FOUND
 
     # Проверка наличия данных в кеше
     genre_id = es_test_data.genres[0].get('id')
     async with make_get_request(
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(genre_cache_exepted), 'Проверка количества полей.'
         assert body == genre_cache_exepted, 'Проверка соответствия данных.'
@@ -121,10 +125,16 @@ async def test_cache(
         handler_url='/api/v1/films/',
         query_data={'sort': '-imdb_rating'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
+        body = await response.json()
+        assert len(body) == len(film_cache_exepted), 'Проверка количества полей.'
+        assert body == film_cache_exepted, 'Проверка соответствия данных.'
 
     person_id = '26e83050-29ef-4163-a99d-b546cac208f8'
     async with make_get_request(
         handler_url=f'/api/v1/persons/{person_id}/film',
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
+        body = await response.json()
+        assert len(body) == len(person_cache_exepted), 'Проверка количества полей.'
+        assert body == person_cache_exepted, 'Проверка соответствия данных.'
