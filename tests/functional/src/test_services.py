@@ -3,7 +3,6 @@ import http
 
 import jwt
 import pytest
-
 from settings import test_settings
 from testdata import index_fillings as es_test_data
 
@@ -67,6 +66,18 @@ async def test_cache(
         body = await response.json()
         assert len(body) == len(film_cache_exepted), 'Проверка количества полей.'
         assert body == film_cache_exepted, 'Проверка соответствия данных.'
+
+    # Попытка удалнеия данных из кеша (неверный токен)
+    token = jwt.encode(
+        {'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=10), 'iat': datetime.datetime.utcnow()},
+        'wrong secret',
+        algorithm='HS256',
+    )
+    async with make_post_request(
+        handler_url='/api/v1/services/flush-cache',
+        headers={'Authorization': f'Bearer {token}'},
+    ) as response:
+        assert response.status == http.HTTPStatus.UNAUTHORIZED
 
     # Удфление данных из кеша
     token = jwt.encode(
