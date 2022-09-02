@@ -1,7 +1,7 @@
 import os
 
 from backoff import backoff
-from elasticsearch import Elasticsearch, TransportError
+from elasticsearch import ConnectionError, Elasticsearch
 
 
 @backoff()
@@ -13,11 +13,9 @@ def check_connection(host: str = os.environ.get('ELASTIC_HOST')) -> bool:
     """
     es_client = Elasticsearch(host)
     if not es_client.ping():
-        raise TransportError('Нет связи с сервером Elasticsearch')
+        raise ConnectionError('Нет связи с сервером Elasticsearch')
     return es_client.ping()
 
 
 if __name__ == '__main__':
-    while True:
-        if check_connection():
-            break
+    check_connection()

@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from aioredis import Redis
+from aioredis import ConnectionError, Redis
 from backoff import backoff
 
 
@@ -9,9 +9,8 @@ from backoff import backoff
 async def main():
     redis = Redis(host=os.environ.get('REDIS_HOST'))
 
-    while True:
-        if await redis.ping():
-            break
+    if not await redis.ping():
+        raise ConnectionError('Нет связи с сервером Redis')
 
 
 if __name__ == '__main__':
