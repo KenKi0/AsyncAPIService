@@ -1,3 +1,5 @@
+import http
+
 import pytest
 from testdata import index_fillings as es_test_data
 
@@ -62,7 +64,7 @@ async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted):
         handler_url=f'/api/v1/films/{film_id}',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(film_by_id_exepted), 'Проверка количества полей'
         assert body == film_by_id_exepted, 'Проверка соответствия данных'
@@ -72,7 +74,7 @@ async def test_film_by_id(make_get_request, es_write_data, film_by_id_exepted):
         handler_url=f'/api/v1/films/{wrong_film_id}',
     ) as response:
 
-        assert response.status == 404, 'Проверка поиска по несуществующему id.'
+        assert response.status == http.HTTPStatus.NOT_FOUND, 'Проверка поиска по несуществующему id.'
 
 
 @pytest.mark.asyncio
@@ -88,7 +90,7 @@ async def test_full_films(make_get_request, es_write_data, film_full_exepted):
         query_data={'sort': '-imdb_rating'},
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(film_full_exepted), 'Проверка наличия всех фильмов.'
 
@@ -113,7 +115,7 @@ async def test_full_films(make_get_request, es_write_data, film_full_exepted):
         query_data={'sort': 'title'},
     ) as response:
 
-        assert response.status == 422, 'Проверка сортировки с невалидными данными.'
+        assert response.status == http.HTTPStatus.UNPROCESSABLE_ENTITY, 'Проверка сортировки с невалидными данными.'
 
 
 @pytest.mark.asyncio
@@ -138,7 +140,7 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
         start = (page_num - 1) * page_size
         stop = page_size * page_num
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == page_size, 'Проверка наличия всех фильмов.'
         assert body == film_pagination_exepted[start:stop], 'Проверка соответствия данных.'
@@ -152,7 +154,9 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
         },
     ) as response:
 
-        assert response.status == 422, 'Проверка пагинации с невалидными данными (page[number] < 1).'
+        assert (
+            response.status == http.HTTPStatus.UNPROCESSABLE_ENTITY
+        ), 'Проверка пагинации с невалидными данными (page[number] < 1).'
 
     async with make_get_request(
         handler_url='/api/v1/films/',
@@ -163,7 +167,9 @@ async def test_pagination_films(make_get_request, es_write_data, film_pagination
         },
     ) as response:
 
-        assert response.status == 422, 'Проверка пагинации с невалидными данными (page[size] < 1).'
+        assert (
+            response.status == http.HTTPStatus.UNPROCESSABLE_ENTITY
+        ), 'Проверка пагинации с невалидными данными (page[size] < 1).'
 
 
 @pytest.mark.asyncio
@@ -183,7 +189,7 @@ async def test_filter_films(make_get_request, es_write_data):
             'filter[genre]': '120a21cf-9097-479e-904a-13dd7198c1dd',
         },
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 30, 'Проверка наличия всех фильмов.'
 
@@ -196,7 +202,9 @@ async def test_filter_films(make_get_request, es_write_data):
             'filter[genre]': 'g333',
         },
     ) as response:
-        assert response.status == 422, 'Проверка фильтрации с невалидными данными (filter[genre] not is UUID).'
+        assert (
+            response.status == http.HTTPStatus.UNPROCESSABLE_ENTITY
+        ), 'Проверка фильтрации с невалидными данными (filter[genre] not is UUID).'
 
 
 @pytest.mark.asyncio
@@ -211,7 +219,7 @@ async def test_search_films(make_get_request, es_write_data):
         handler_url='/api/v1/films/search/',
         query_data={'query': 'man'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 50, 'Проверка наличия всех фильмов.'
 
@@ -219,6 +227,6 @@ async def test_search_films(make_get_request, es_write_data):
         handler_url='/api/v1/films/search/',
         query_data={'query': 'jail'},
     ) as response:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == 30, 'Проверка наличия всех фильмов.'

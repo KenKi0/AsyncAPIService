@@ -1,3 +1,5 @@
+import http
+
 import pytest
 from testdata import index_fillings as es_test_data
 
@@ -36,7 +38,7 @@ async def test_genre_by_id(make_get_request, es_write_data, genre_by_id_exepted)
         handler_url=f'/api/v1/genres/{genre_id}',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(genre_by_id_exepted), 'Проверка количества полей'
         assert body == genre_by_id_exepted, 'Проверка соответствия данных'
@@ -46,7 +48,7 @@ async def test_genre_by_id(make_get_request, es_write_data, genre_by_id_exepted)
         handler_url=f'/api/v1/genres/{wrong_genre_id}',
     ) as response:
 
-        assert response.status == 404, 'Проверка поиска по несуществующему id.'
+        assert response.status == http.HTTPStatus.NOT_FOUND, 'Проверка поиска по несуществующему id.'
 
 
 @pytest.mark.asyncio
@@ -61,7 +63,7 @@ async def test_full_films(make_get_request, es_write_data, genre_full_exepted):
         handler_url='/api/v1/genres/',
     ) as response:
 
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         body = await response.json()
         assert len(body) == len(genre_full_exepted), 'Проверка наличия всех фильмов.'
 
