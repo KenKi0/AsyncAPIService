@@ -6,6 +6,7 @@ from fastapi import Depends
 from core.logger import logger as _logger
 from db.repository import Repository, get_repository
 from models.film import ESFilm
+from core.config import settings
 
 logger = _logger(__name__)
 
@@ -17,7 +18,7 @@ class FilmService:
         """
         self.repo = repo
 
-    async def get_by_id(self, film_id: str) -> dict | None:
+    async def get_by_id(self, film_id: str, **kwargs) -> dict | None:
         """
         Получение и запись информации о фильме.
         :param film_id: id фильма
@@ -28,6 +29,10 @@ class FilmService:
             return
         data = ESFilm(**doc['_source']).dict()
         logger.debug('[+] Return film from elastic. id:%s', film_id)
+        # check permission
+        permissions = kwargs.get('permissions') if kwargs.get('permissions') else []
+        if data.get('only_sub') and (settings.permission.Subscriber not in permissions):
+            return None
         return data
 
     async def get_by_search(self, **kwargs) -> list[dict] | None:
