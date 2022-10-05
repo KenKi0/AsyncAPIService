@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.v1.utils import PaginatedParams, SortEnum
+from api.v1.utils import PaginatedParams, SortEnum, get_permissions
 from core.logger import logger as _logger
 from models.film import DetailFilmResponse, FilmResponse
 from services.film import FilmService, get_film_service
@@ -71,8 +71,9 @@ async def search_film(
 async def film_details(
     film_id: str,
     service: FilmService = Depends(get_film_service),
+    permissions: list = Depends(get_permissions),
 ) -> DetailFilmResponse | None:
-    film = await service.get_by_id(film_id=film_id)
+    film = await service.get_by_id(film_id=film_id, permissions=permissions)
     if not film:
         logger.debug('[-] %s. id: %s', Msg.not_found.value, film_id)
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Msg.not_found.value)
